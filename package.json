@@ -2,7 +2,11 @@
   "name": "ipe_crm",
   "version": "1.0.0",
   "private": true,
-  "workspaces": ["frontend", "backend", "packages/shared"],
+  "workspaces": [
+    "frontend",
+    "backend",
+    "packages/shared"
+  ],
   "scripts": {
     "dev:web": "npm run dev --workspace=frontend",
     "dev:api": "npm run dev --workspace=backend",
@@ -12,6 +16,7 @@
     "prepare": "husky"
   },
   "devDependencies": {
+    "@nestjs/platform-express": "^11.0.1",
     "@typescript-eslint/eslint-plugin": "^8.20.0",
     "@typescript-eslint/parser": "^8.20.0",
     "eslint": "^9.18.0",
