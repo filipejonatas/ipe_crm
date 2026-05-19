@@ -7,6 +7,7 @@ import { criarOpcoesTypeOrmAsync } from './config/typeorm.config';
 import { AutenticacaoModule } from './modules/autenticacao/autenticacao.module';
 import { AuditoriaModule } from './modules/auditoria/auditoria.module';
 import { ConfiguracoesModule } from './modules/configuracoes/configuracoes.module';
+import { EstoqueModule } from './modules/estoque/estoque.module';
 import { FornecedoresModule } from './modules/fornecedores/fornecedores.module';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
 import { VeiculosModule } from './modules/veiculos/veiculos.module';
@@ -20,6 +21,7 @@ import { VeiculosModule } from './modules/veiculos/veiculos.module';
     AutenticacaoModule,
     FornecedoresModule,
     VeiculosModule,
+    EstoqueModule,
     ConfiguracoesModule,
   ],
   controllers: [AppController],

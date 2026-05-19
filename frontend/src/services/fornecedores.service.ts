@@ -36,6 +36,7 @@ export interface RespostaPaginada<T> {
   total: number;
   pagina: number;
   limite: number;
+  total_paginas?: number;
 }
 
 export const fornecedoresService = {

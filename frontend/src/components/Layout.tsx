@@ -13,7 +13,7 @@ const menus: MenuItem[] = [
   {
     nome: 'Estoque',
     caminho: '/estoque',
-    perfis: [PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS],
+    perfis: [PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS, PERFIS.GERENTE],
   },
   { nome: 'Compras', caminho: '/compras', perfis: [PERFIS.ADMIN, PERFIS.COMPRAS] },
   {
