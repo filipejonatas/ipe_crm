@@ -6,6 +6,7 @@ import type { Perfil } from '@ipe_crm/shared';
 
 interface JwtPayload {
   sub: string;
+  nome?: string;
   email: string;
   perfil: Perfil;
 }
@@ -16,13 +17,14 @@ export class EstrategiaJwt extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') ?? 'dev_secret',
+      secretOrKey: configService.get<string>('JWT_SECRET') || 'dev_secret',
     });
   }
 
   validate(payload: JwtPayload) {
     return {
       id: payload.sub,
+      nome: payload.nome,
       email: payload.email,
       perfil: payload.perfil,
     };

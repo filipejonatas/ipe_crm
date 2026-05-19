@@ -5,14 +5,22 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { criarOpcoesTypeOrmAsync } from './config/typeorm.config';
 import { AutenticacaoModule } from './modules/autenticacao/autenticacao.module';
+import { AuditoriaModule } from './modules/auditoria/auditoria.module';
+import { ConfiguracoesModule } from './modules/configuracoes/configuracoes.module';
+import { FornecedoresModule } from './modules/fornecedores/fornecedores.module';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
+import { VeiculosModule } from './modules/veiculos/veiculos.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync(criarOpcoesTypeOrmAsync()),
+    AuditoriaModule,
     UsuariosModule,
     AutenticacaoModule,
+    FornecedoresModule,
+    VeiculosModule,
+    ConfiguracoesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

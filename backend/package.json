@@ -19,9 +19,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "migration:generate": "typeorm-ts-node-commonjs -d ./src/config/data-source.ts migration:generate",
-    "migration:run": "typeorm-ts-node-commonjs -d ./src/config/data-source.ts migration:run",
-    "migration:revert": "typeorm-ts-node-commonjs -d ./src/config/data-source.ts migration:revert"
+    "migration:generate": "node -r ./node_modules/ts-node/register -r ./node_modules/tsconfig-paths/register ../node_modules/typeorm/cli.js -d ./src/config/data-source.ts migration:generate",
+    "migration:run": "node -r ./node_modules/ts-node/register -r ./node_modules/tsconfig-paths/register ../node_modules/typeorm/cli.js -d ./src/config/data-source.ts migration:run",
+    "migration:revert": "node -r ./node_modules/ts-node/register -r ./node_modules/tsconfig-paths/register ../node_modules/typeorm/cli.js -d ./src/config/data-source.ts migration:revert"
   },
   "dependencies": {
     "@ipe_crm/shared": "*",

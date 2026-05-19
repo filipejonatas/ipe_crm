@@ -16,6 +16,16 @@ const menus: MenuItem[] = [
     perfis: [PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS],
   },
   { nome: 'Compras', caminho: '/compras', perfis: [PERFIS.ADMIN, PERFIS.COMPRAS] },
+  {
+    nome: 'Fornecedores',
+    caminho: '/fornecedores',
+    perfis: [PERFIS.ADMIN, PERFIS.COMPRAS, PERFIS.ADMINISTRATIVO, PERFIS.GERENTE],
+  },
+  {
+    nome: 'Veiculos',
+    caminho: '/veiculos',
+    perfis: [PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS, PERFIS.GERENTE],
+  },
   { nome: 'Cotacoes', caminho: '/cotacoes', perfis: [PERFIS.ADMIN, PERFIS.COMPRAS] },
   {
     nome: 'Contratos',

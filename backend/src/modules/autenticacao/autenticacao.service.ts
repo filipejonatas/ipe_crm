@@ -42,13 +42,14 @@ export class AutenticacaoService {
   async login(usuario: UsuarioAutenticado): Promise<RespostaLoginDto> {
     const payload = {
       sub: usuario.id,
+      nome: usuario.nome,
       email: usuario.email,
       perfil: usuario.perfil,
     };
 
     return {
       access_token: await this.jwtService.signAsync(payload, {
-        expiresIn: (this.configService.get<string>('JWT_EXPIRES_IN') ??
+        expiresIn: (this.configService.get<string>('JWT_EXPIRES_IN') ||
           '8h') as SignOptions['expiresIn'],
       }),
       usuario,

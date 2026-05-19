@@ -1,9 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { PERFIS } from '@ipe_crm/shared';
 import { RotaProtegida } from '../../common';
 import { AtualizarUsuarioDto } from './dto/atualizar-usuario.dto';
 import { CriarUsuarioDto } from './dto/criar-usuario.dto';
-import { UsuariosService } from './usuarios.service';
+import { UsuarioAuditoria, UsuariosService } from './usuarios.service';
+
+interface RequestComUsuario {
+  user?: UsuarioAuditoria;
+}
 
 @Controller('usuarios')
 export class UsuariosController {
@@ -11,8 +15,8 @@ export class UsuariosController {
 
   @Post()
   @RotaProtegida(PERFIS.ADMIN)
-  criar(@Body() dto: CriarUsuarioDto) {
-    return this.usuariosService.criar(dto);
+  criar(@Body() dto: CriarUsuarioDto, @Req() request: RequestComUsuario) {
+    return this.usuariosService.criar(dto, request.user);
   }
 
   @Get()
@@ -29,13 +33,17 @@ export class UsuariosController {
 
   @Patch(':id')
   @RotaProtegida(PERFIS.ADMIN)
-  atualizar(@Param('id') id: string, @Body() dto: AtualizarUsuarioDto) {
-    return this.usuariosService.atualizar(id, dto);
+  atualizar(
+    @Param('id') id: string,
+    @Body() dto: AtualizarUsuarioDto,
+    @Req() request: RequestComUsuario,
+  ) {
+    return this.usuariosService.atualizar(id, dto, request.user);
   }
 
   @Delete(':id')
   @RotaProtegida(PERFIS.ADMIN)
-  remover(@Param('id') id: string) {
-    return this.usuariosService.remover(id);
+  remover(@Param('id') id: string, @Req() request: RequestComUsuario) {
+    return this.usuariosService.remover(id, request.user);
   }
 }
