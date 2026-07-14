@@ -6,8 +6,13 @@ Este documento parte do estado atual da pipeline:
 - Checkpoint 2 concluido: jobs separados para `shared`, `frontend` e `backend`.
 - Checkpoint 3 concluido: frontend com lint, build, testes e artefato `frontend-dist`.
 - Checkpoint 4 concluido: backend com lint sem `--fix`, build, testes unitarios/e2e e artefato `backend-dist`.
+- Checkpoint 5 preparado: CI sem conexao ao Supabase em testes, envs seguros no job `Backend` e documentacao de secrets em `docs/CONFIGURACAO_CICD_SUPABASE.md`.
+- Checkpoint 6 preparado: frontend usa `VITE_API_URL`, possui `frontend/.env.example` e documentacao em `docs/CONFIGURACAO_DEPLOY_FRONTEND.md`.
 
 ## Checkpoint 5: Banco e variaveis de ambiente
+
+
+Status: preparado para o estado atual. O banco esta no Supabase online, mas lint/build/test nao conectam nele. Ver detalhes em docs/CONFIGURACAO_CICD_SUPABASE.md.
 
 Objetivo: preparar CI/CD para usar configuracoes sensiveis sem versionar segredos.
 
@@ -51,6 +56,8 @@ services:
 ```
 
 ## Checkpoint 6: Deploy do frontend
+
+Status: preparado parcialmente. O frontend esta pronto para receber a URL publica da API via `VITE_API_URL`. Falta escolher a plataforma de hospedagem para criar o deploy real.
 
 Objetivo: publicar o artefato `frontend-dist` em uma plataforma de hospedagem.
 
