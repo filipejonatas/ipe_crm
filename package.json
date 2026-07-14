@@ -13,7 +13,7 @@
     "lint": "npm run lint --workspaces --if-present",
     "format": "npm run format --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
-    "prepare": "husky"
+    "prepare": "node -e \"if (!process.env.CI && !process.env.VERCEL) require('child_process').execSync('husky', { stdio: 'inherit' })\""
   },
   "devDependencies": {
     "@nestjs/platform-express": "^11.0.1",
