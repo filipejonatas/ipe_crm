@@ -1,3 +1,4 @@
+import { PERFIS } from '@ipe_crm/shared';
 import { createBrowserRouter } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { RotaPrivada } from '@/components/RotaPrivada';
@@ -20,16 +21,44 @@ export const router = createBrowserRouter([
         element: <Layout />,
         children: [
           { path: '/', element: <PaginaPlaceholder titulo="Dashboard" /> },
-          { path: '/estoque', element: <EstoquePage /> },
-          { path: '/compras', element: <PaginaPlaceholder titulo="Compras" /> },
-          { path: '/cotacoes', element: <PaginaPlaceholder titulo="Cotacoes" /> },
-          { path: '/contratos', element: <PaginaPlaceholder titulo="Contratos" /> },
-          { path: '/fornecedores', element: <FornecedoresPage /> },
-          { path: '/veiculos', element: <VeiculosPage /> },
-          { path: '/usuarios', element: <PaginaPlaceholder titulo="Usuarios" /> },
+          {
+            element: (
+              <RotaPrivada
+                perfis={[PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS, PERFIS.GERENTE]}
+              />
+            ),
+            children: [
+              { path: '/estoque', element: <EstoquePage /> },
+              { path: '/veiculos', element: <VeiculosPage /> },
+            ],
+          },
+          {
+            element: <RotaPrivada perfis={[PERFIS.ADMIN, PERFIS.COMPRAS]} />,
+            children: [
+              { path: '/compras', element: <PaginaPlaceholder titulo="Compras" /> },
+              { path: '/cotacoes', element: <PaginaPlaceholder titulo="Cotacoes" /> },
+            ],
+          },
+          {
+            element: (
+              <RotaPrivada
+                perfis={[PERFIS.ADMIN, PERFIS.COMPRAS, PERFIS.ADMINISTRATIVO, PERFIS.GERENTE]}
+              />
+            ),
+            children: [{ path: '/fornecedores', element: <FornecedoresPage /> }],
+          },
+          {
+            element: <RotaPrivada perfis={[PERFIS.ADMIN, PERFIS.ADMINISTRATIVO, PERFIS.GERENTE]} />,
+            children: [{ path: '/contratos', element: <PaginaPlaceholder titulo="Contratos" /> }],
+          },
+          {
+            element: <RotaPrivada perfis={[PERFIS.ADMIN]} />,
+            children: [{ path: '/usuarios', element: <PaginaPlaceholder titulo="Usuarios" /> }],
+          },
           {
             path: '/configuracoes',
-            element: <ConfiguracoesPage />,
+            element: <RotaPrivada perfis={[PERFIS.ADMIN]} />,
+            children: [{ index: true, element: <ConfiguracoesPage /> }],
           },
         ],
       },

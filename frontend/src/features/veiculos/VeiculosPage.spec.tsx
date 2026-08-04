@@ -1,5 +1,7 @@
+import { PERFIS } from '@ipe_crm/shared';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useAutenticacaoStore } from '@/store/autenticacao.store';
 import { VeiculosPage } from './VeiculosPage';
 
 vi.mock('./hooks/useVeiculos', () => ({
@@ -30,6 +32,19 @@ vi.mock('./hooks/useVeiculos', () => ({
 }));
 
 describe('VeiculosPage', () => {
+  beforeEach(() => {
+    useAutenticacaoStore.setState({
+      autenticado: true,
+      token: 'token-teste',
+      usuario: {
+        id: 'usuario-1',
+        nome: 'Admin',
+        email: 'admin@ipecrm.com',
+        perfil: PERFIS.ADMIN,
+      },
+    });
+  });
+
   it('renderiza a tabela de veiculos', () => {
     render(<VeiculosPage />);
 
@@ -55,5 +70,22 @@ describe('VeiculosPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /novo veiculo/i }));
 
     expect(screen.getByRole('heading', { name: /novo veiculo/i })).toBeInTheDocument();
+  });
+
+  it('oculta acoes de escrita para perfil oficina', () => {
+    useAutenticacaoStore.setState({
+      usuario: {
+        id: 'usuario-2',
+        nome: 'Oficina',
+        email: 'oficina@ipecrm.com',
+        perfil: PERFIS.OFICINA,
+      },
+    });
+
+    render(<VeiculosPage />);
+
+    expect(screen.queryByRole('button', { name: /novo veiculo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /editar/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /excluir/i })).not.toBeInTheDocument();
   });
 });

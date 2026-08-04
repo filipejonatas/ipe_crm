@@ -1,5 +1,7 @@
+import { PERFIS } from '@ipe_crm/shared';
 import { useMemo, useState } from 'react';
 import type { CriarFornecedorDto, Fornecedor } from '@/services/fornecedores.service';
+import { useAutenticacaoStore } from '@/store/autenticacao.store';
 import { FornecedorFormModal } from './FornecedorFormModal';
 import { FornecedorFormValues } from './fornecedor.schema';
 import {
@@ -16,6 +18,7 @@ function limparVazios<T extends Record<string, unknown>>(valores: T) {
 }
 
 export function FornecedoresPage() {
+  const usuario = useAutenticacaoStore((state) => state.usuario);
   const [busca, setBusca] = useState('');
   const [ativo, setAtivo] = useState<string>('');
   const [pagina, setPagina] = useState(1);
@@ -34,6 +37,9 @@ export function FornecedoresPage() {
   const criar = useCriarFornecedor();
   const atualizar = useAtualizarFornecedor();
   const remover = useRemoverFornecedor();
+  const perfil = usuario?.perfil;
+  const podeCriarEditar = Boolean(perfil && [PERFIS.ADMIN, PERFIS.COMPRAS].includes(perfil));
+  const podeExcluir = perfil === PERFIS.ADMIN;
 
   function abrirNovo() {
     setSelecionado(null);
@@ -63,13 +69,15 @@ export function FornecedoresPage() {
           <h1 className="text-2xl font-semibold text-zinc-950">Fornecedores</h1>
           <p className="text-sm text-zinc-500">Cadastros base para compras e administrativo.</p>
         </div>
-        <button
-          className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white"
-          onClick={abrirNovo}
-          type="button"
-        >
-          Novo Fornecedor
-        </button>
+        {podeCriarEditar && (
+          <button
+            className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white"
+            onClick={abrirNovo}
+            type="button"
+          >
+            Novo Fornecedor
+          </button>
+        )}
       </div>
 
       <div className="flex flex-col gap-3 rounded-md border border-zinc-200 bg-white p-4 sm:flex-row">
@@ -147,23 +155,27 @@ export function FornecedoresPage() {
                   {fornecedor.ativo ? 'Ativo' : 'Inativo'}
                 </td>
                 <td className="px-4 py-3 text-right text-sm">
-                  <button
-                    className="mr-3 font-medium text-emerald-700"
-                    onClick={() => {
-                      setSelecionado(fornecedor);
-                      setModalAberto(true);
-                    }}
-                    type="button"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    className="font-medium text-red-700"
-                    onClick={() => excluir(fornecedor)}
-                    type="button"
-                  >
-                    Excluir
-                  </button>
+                  {podeCriarEditar && (
+                    <button
+                      className="mr-3 font-medium text-emerald-700"
+                      onClick={() => {
+                        setSelecionado(fornecedor);
+                        setModalAberto(true);
+                      }}
+                      type="button"
+                    >
+                      Editar
+                    </button>
+                  )}
+                  {podeExcluir && (
+                    <button
+                      className="font-medium text-red-700"
+                      onClick={() => excluir(fornecedor)}
+                      type="button"
+                    >
+                      Excluir
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

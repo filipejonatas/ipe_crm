@@ -1,5 +1,7 @@
+import { PERFIS } from '@ipe_crm/shared';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useAutenticacaoStore } from '@/store/autenticacao.store';
 import { FornecedoresPage } from './FornecedoresPage';
 
 vi.mock('./hooks/useFornecedores', () => ({
@@ -31,6 +33,19 @@ vi.mock('./hooks/useFornecedores', () => ({
 }));
 
 describe('FornecedoresPage', () => {
+  beforeEach(() => {
+    useAutenticacaoStore.setState({
+      autenticado: true,
+      token: 'token-teste',
+      usuario: {
+        id: 'usuario-1',
+        nome: 'Admin',
+        email: 'admin@ipecrm.com',
+        perfil: PERFIS.ADMIN,
+      },
+    });
+  });
+
   it('renderiza a tabela de fornecedores', () => {
     render(<FornecedoresPage />);
 
@@ -56,5 +71,39 @@ describe('FornecedoresPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /novo fornecedor/i }));
 
     expect(screen.getByRole('heading', { name: /novo fornecedor/i })).toBeInTheDocument();
+  });
+
+  it('oculta acoes de escrita para perfil gerente', () => {
+    useAutenticacaoStore.setState({
+      usuario: {
+        id: 'usuario-2',
+        nome: 'Gerente',
+        email: 'gerente@ipecrm.com',
+        perfil: PERFIS.GERENTE,
+      },
+    });
+
+    render(<FornecedoresPage />);
+
+    expect(screen.queryByRole('button', { name: /novo fornecedor/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /editar/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /excluir/i })).not.toBeInTheDocument();
+  });
+
+  it('permite compras criar e editar, mas nao excluir', () => {
+    useAutenticacaoStore.setState({
+      usuario: {
+        id: 'usuario-3',
+        nome: 'Compras',
+        email: 'compras@ipecrm.com',
+        perfil: PERFIS.COMPRAS,
+      },
+    });
+
+    render(<FornecedoresPage />);
+
+    expect(screen.getByRole('button', { name: /novo fornecedor/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /editar/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /excluir/i })).not.toBeInTheDocument();
   });
 });
