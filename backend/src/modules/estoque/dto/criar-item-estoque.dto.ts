@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { CategoriaItemEstoque } from '../entities/categoria-item-estoque.enum';
 
 export class CriarItemEstoqueDto {
@@ -23,13 +23,13 @@ export class CriarItemEstoqueDto {
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @Min(0)
   saldo_inicial?: number;
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @Min(0)
   estoque_minimo?: number;
 

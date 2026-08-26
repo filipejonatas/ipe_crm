@@ -31,11 +31,13 @@ function criarItem(sobrescritas: Partial<ItemEstoque> = {}): ItemEstoque {
 
 function criarQueryBuilder(itens: ItemEstoque[] = [criarItem()], total = itens.length) {
   return {
+    select: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     andWhere: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
     skip: jest.fn().mockReturnThis(),
     take: jest.fn().mockReturnThis(),
+    getRawOne: jest.fn().mockResolvedValue({ maior_codigo: 0 }),
     getManyAndCount: jest.fn().mockResolvedValue([itens, total]),
   };
 }
@@ -72,8 +74,18 @@ describe('ItensEstoqueService', () => {
       estoque_minimo: 1,
     });
 
-    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ saldo_atual: 0 }));
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ codigo: '01', saldo_atual: 0 }),
+    );
     expect(movimentacoesService.registrarEntrada).not.toHaveBeenCalled();
+  });
+
+  it('proximoCodigo retorna proximo codigo numerico com dois digitos', async () => {
+    const qb = criarQueryBuilder();
+    qb.getRawOne.mockResolvedValue({ maior_codigo: 9 });
+    repository.createQueryBuilder.mockReturnValue(qb);
+
+    await expect(service.proximoCodigo()).resolves.toEqual({ codigo: '10' });
   });
 
   it('criar cria movimentacao de entrada quando saldo_inicial > 0', async () => {

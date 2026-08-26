@@ -12,6 +12,7 @@ import {
   useAtualizarItemEstoque,
   useCriarItemEstoque,
   useItensEstoque,
+  useProximoCodigoItemEstoque,
   useRemoverItemEstoque,
   useVincularVeiculosItem,
 } from './hooks/useItensEstoque';
@@ -57,6 +58,7 @@ export function EstoquePage() {
     [ativo, baixoEstoque, busca, categoria, pagina],
   );
   const { data, isLoading } = useItensEstoque(filtros);
+  const proximoCodigo = useProximoCodigoItemEstoque(modalAtivo === 'item' && !selecionado);
   const criar = useCriarItemEstoque();
   const atualizar = useAtualizarItemEstoque();
   const remover = useRemoverItemEstoque();
@@ -131,7 +133,7 @@ export function EstoquePage() {
           <option value="">Categorias</option>
           {categoriasItemEstoque.map((itemCategoria) => (
             <option key={itemCategoria} value={itemCategoria}>
-              {itemCategoria}
+              {itemCategoria.toUpperCase()}
             </option>
           ))}
         </select>
@@ -208,7 +210,9 @@ export function EstoquePage() {
                   <td className="px-4 py-3 text-sm text-zinc-600">{item.codigo ?? '-'}</td>
                   <td className="px-4 py-3 text-sm font-medium text-zinc-900">{item.descricao}</td>
                   <td className="px-4 py-3 text-sm text-zinc-600">{item.marca ?? '-'}</td>
-                  <td className="px-4 py-3 text-sm text-zinc-600">{item.categoria}</td>
+                  <td className="px-4 py-3 text-sm text-zinc-600">
+                    {item.categoria.toUpperCase()}
+                  </td>
                   <td className="px-4 py-3 text-sm font-medium text-zinc-900">
                     {item.saldo_atual}
                   </td>
@@ -302,6 +306,7 @@ export function EstoquePage() {
 
       <ItemEstoqueFormModal
         aberto={modalAtivo === 'item'}
+        codigoSugerido={proximoCodigo.data?.codigo}
         item={selecionado}
         salvando={criar.isPending || atualizar.isPending}
         onFechar={fecharModal}

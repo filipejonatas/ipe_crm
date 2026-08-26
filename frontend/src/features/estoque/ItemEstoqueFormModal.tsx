@@ -9,6 +9,8 @@ import {
 } from '@/services/estoque.service';
 
 const textoOpcional = z.string().trim().optional().or(z.literal(''));
+const numeroInteiroNaoNegativo = (campo: string) =>
+  z.coerce.number().int(`${campo} deve ser inteiro`).min(0, `${campo} nao pode ser negativo`);
 
 export const itemEstoqueFormSchema = z.object({
   codigo: textoOpcional,
@@ -19,8 +21,8 @@ export const itemEstoqueFormSchema = z.object({
     .min(1, 'Categoria e obrigatoria')
     .pipe(z.enum(['filtro', 'pneu', 'ferramenta', 'peca', 'insumo', 'outro'])),
   unidade_medida: z.string().trim().min(1, 'Unidade e obrigatoria'),
-  saldo_inicial: z.coerce.number().min(0, 'Saldo inicial nao pode ser negativo').optional(),
-  estoque_minimo: z.coerce.number().min(0, 'Estoque minimo nao pode ser negativo'),
+  saldo_inicial: numeroInteiroNaoNegativo('Saldo inicial').optional(),
+  estoque_minimo: numeroInteiroNaoNegativo('Estoque minimo'),
   ativo: z.boolean(),
   observacoes: textoOpcional,
 });
@@ -29,6 +31,7 @@ export type ItemEstoqueFormValues = z.infer<typeof itemEstoqueFormSchema>;
 
 interface Props {
   aberto: boolean;
+  codigoSugerido?: string;
   item?: ItemEstoque | null;
   salvando?: boolean;
   onFechar: () => void;
@@ -47,7 +50,14 @@ const valoresPadrao: ItemEstoqueFormValues = {
   observacoes: '',
 };
 
-export function ItemEstoqueFormModal({ aberto, item, salvando, onFechar, onSalvar }: Props) {
+export function ItemEstoqueFormModal({
+  aberto,
+  codigoSugerido,
+  item,
+  salvando,
+  onFechar,
+  onSalvar,
+}: Props) {
   const editando = Boolean(item);
   const {
     register,
@@ -73,16 +83,24 @@ export function ItemEstoqueFormModal({ aberto, item, salvando, onFechar, onSalva
             ativo: item.ativo,
             observacoes: item.observacoes ?? '',
           }
-        : valoresPadrao,
+        : { ...valoresPadrao, codigo: codigoSugerido ?? '' },
     );
-  }, [aberto, item, reset]);
+  }, [aberto, codigoSugerido, item, reset]);
 
   if (!aberto) return null;
 
   function salvar(valores: ItemEstoqueFormValues) {
-    const dto = Object.fromEntries(
-      Object.entries(valores).map(([chave, valor]) => [chave, valor === '' ? null : valor]),
-    ) as unknown as CriarItemEstoqueDto & { ativo?: boolean };
+    const textoOuUndefined = (valor?: string) => {
+      const texto = valor?.trim();
+      return texto ? texto : undefined;
+    };
+    const dto = {
+      ...valores,
+      codigo: textoOuUndefined(valores.codigo),
+      marca: textoOuUndefined(valores.marca),
+      unidade_medida: textoOuUndefined(valores.unidade_medida),
+      observacoes: textoOuUndefined(valores.observacoes),
+    } as CriarItemEstoqueDto & { ativo?: boolean };
     if (editando) delete dto.saldo_inicial;
     onSalvar(dto);
   }
@@ -103,7 +121,9 @@ export function ItemEstoqueFormModal({ aberto, item, salvando, onFechar, onSalva
           <label>
             <span className="text-sm font-medium text-zinc-700">Codigo</span>
             <input
-              className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+              className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 read-only:bg-zinc-100 read-only:text-zinc-500"
+              placeholder={editando ? undefined : 'Gerando...'}
+              readOnly={!editando}
               {...register('codigo')}
             />
           </label>
@@ -116,7 +136,7 @@ export function ItemEstoqueFormModal({ aberto, item, salvando, onFechar, onSalva
               <option value="">Selecione</option>
               {categoriasItemEstoque.map((categoria) => (
                 <option key={categoria} value={categoria}>
-                  {categoria}
+                  {categoria.toUpperCase()}
                 </option>
               ))}
             </select>
@@ -153,8 +173,9 @@ export function ItemEstoqueFormModal({ aberto, item, salvando, onFechar, onSalva
               <span className="text-sm font-medium text-zinc-700">Saldo inicial</span>
               <input
                 className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+                min="0"
                 type="number"
-                step="0.001"
+                step="1"
                 {...register('saldo_inicial')}
               />
               {errors.saldo_inicial && (
@@ -166,8 +187,9 @@ export function ItemEstoqueFormModal({ aberto, item, salvando, onFechar, onSalva
             <span className="text-sm font-medium text-zinc-700">Estoque minimo</span>
             <input
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+              min="0"
               type="number"
-              step="0.001"
+              step="1"
               {...register('estoque_minimo')}
             />
             {errors.estoque_minimo && (

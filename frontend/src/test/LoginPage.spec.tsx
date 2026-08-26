@@ -63,6 +63,19 @@ describe('LoginPage', () => {
     expect(await screen.findByText(/senha deve ter no minimo/i)).toBeInTheDocument();
   });
 
+  it('permite alternar a visualizacao da senha', async () => {
+    renderLoginPage();
+
+    const campoSenha = screen.getByLabelText(/senha/i);
+    expect(campoSenha).toHaveAttribute('type', 'password');
+
+    await userEvent.click(screen.getByRole('button', { name: /mostrar/i }));
+    expect(campoSenha).toHaveAttribute('type', 'text');
+
+    await userEvent.click(screen.getByRole('button', { name: /ocultar/i }));
+    expect(campoSenha).toHaveAttribute('type', 'password');
+  });
+
   it('chama o servico com os dados corretos ao submeter', async () => {
     loginMock.mockResolvedValue({
       access_token: 'token-teste',

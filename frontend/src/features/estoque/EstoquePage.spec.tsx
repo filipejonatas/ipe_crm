@@ -41,6 +41,10 @@ vi.mock('./hooks/useItensEstoque', () => ({
     },
     isLoading: false,
   })),
+  useProximoCodigoItemEstoque: vi.fn(() => ({
+    data: { codigo: '01' },
+    isLoading: false,
+  })),
   useCriarItemEstoque: vi.fn(() => ({
     mutateAsync: vi.fn(() => Promise.resolve()),
     isPending: false,

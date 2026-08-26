@@ -18,6 +18,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const salvarLogin = useAutenticacaoStore((state) => state.login);
   const [erro, setErro] = useState<string | null>(null);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
 
   const {
     register,
@@ -74,13 +75,54 @@ export function LoginPage() {
             <label className="text-sm font-medium text-zinc-800" htmlFor="senha">
               Senha
             </label>
-            <input
-              className="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-zinc-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
-              id="senha"
-              type="password"
-              autoComplete="current-password"
-              {...register('senha')}
-            />
+            <div className="relative mt-2">
+              <input
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 pr-11 text-zinc-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                id="senha"
+                type={mostrarSenha ? 'text' : 'password'}
+                autoComplete="current-password"
+                {...register('senha')}
+              />
+              <button
+                aria-label={mostrarSenha ? 'Ocultar' : 'Mostrar'}
+                className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-zinc-500 transition hover:text-zinc-800"
+                title={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                type="button"
+                onClick={() => setMostrarSenha((valor) => !valor)}
+              >
+                {mostrarSenha ? (
+                  <svg
+                    aria-hidden="true"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M10.7 5.1A10.8 10.8 0 0 1 12 5c5 0 8.5 4.1 9.7 5.8a2 2 0 0 1 0 2.4 17.8 17.8 0 0 1-3 3.4" />
+                    <path d="M14.1 14.1a3 3 0 0 1-4.2-4.2" />
+                    <path d="M3 3l18 18" />
+                    <path d="M6.5 6.5a17.2 17.2 0 0 0-4.2 4.3 2 2 0 0 0 0 2.4C3.5 14.9 7 19 12 19a9.6 9.6 0 0 0 3.5-.7" />
+                  </svg>
+                ) : (
+                  <svg
+                    aria-hidden="true"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M2.3 10.8a2 2 0 0 0 0 2.4C3.5 14.9 7 19 12 19s8.5-4.1 9.7-5.8a2 2 0 0 0 0-2.4C20.5 9.1 17 5 12 5s-8.5 4.1-9.7 5.8Z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
+            </div>
             {errors.senha ? (
               <p className="mt-2 text-sm text-red-700">{errors.senha.message}</p>
             ) : null}

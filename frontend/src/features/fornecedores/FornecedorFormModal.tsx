@@ -22,11 +22,23 @@ const valoresPadrao: FornecedorFormValues = {
   ativo: true,
 };
 
+function somenteDigitos(valor: string, limite: number) {
+  return valor.replace(/\D/g, '').slice(0, limite);
+}
+
+function formatarTelefone(valor: string) {
+  const digitos = somenteDigitos(valor, 11);
+  if (digitos.length <= 2) return digitos ? `(${digitos}` : '';
+  if (digitos.length <= 7) return `(${digitos.slice(0, 2)}) ${digitos.slice(2)}`;
+  return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+}
+
 export function FornecedorFormModal({ aberto, fornecedor, salvando, onFechar, onSalvar }: Props) {
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<FornecedorFormValues>({
     resolver: zodResolver(fornecedorFormSchema),
@@ -39,8 +51,8 @@ export function FornecedorFormModal({ aberto, fornecedor, salvando, onFechar, on
         ? {
             razao_social: fornecedor.razao_social,
             nome_fantasia: fornecedor.nome_fantasia ?? '',
-            cnpj: fornecedor.cnpj ?? '',
-            telefone: fornecedor.telefone ?? '',
+            cnpj: somenteDigitos(fornecedor.cnpj ?? '', 14),
+            telefone: formatarTelefone(fornecedor.telefone ?? ''),
             email: fornecedor.email ?? '',
             observacoes: fornecedor.observacoes ?? '',
             ativo: fornecedor.ativo,
@@ -88,16 +100,36 @@ export function FornecedorFormModal({ aberto, fornecedor, salvando, onFechar, on
           <label>
             <span className="text-sm font-medium text-zinc-700">CNPJ</span>
             <input
+              inputMode="numeric"
+              maxLength={14}
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
-              {...register('cnpj')}
+              {...register('cnpj', {
+                onChange: (event) => {
+                  setValue('cnpj', somenteDigitos(String(event.target.value), 14), {
+                    shouldValidate: true,
+                  });
+                },
+              })}
             />
+            {errors.cnpj && <span className="text-xs text-red-600">{errors.cnpj.message}</span>}
           </label>
           <label>
             <span className="text-sm font-medium text-zinc-700">Telefone</span>
             <input
+              inputMode="numeric"
+              maxLength={15}
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
-              {...register('telefone')}
+              {...register('telefone', {
+                onChange: (event) => {
+                  setValue('telefone', formatarTelefone(String(event.target.value)), {
+                    shouldValidate: true,
+                  });
+                },
+              })}
             />
+            {errors.telefone && (
+              <span className="text-xs text-red-600">{errors.telefone.message}</span>
+            )}
           </label>
           <label>
             <span className="text-sm font-medium text-zinc-700">Email</span>

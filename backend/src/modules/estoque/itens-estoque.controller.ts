@@ -33,6 +33,12 @@ export class ItensEstoqueController {
     return this.itensEstoqueService.listar(filtros);
   }
 
+  @Get('proximo-codigo')
+  @RotaProtegida(PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS)
+  proximoCodigo() {
+    return this.itensEstoqueService.proximoCodigo();
+  }
+
   @Get(':id')
   @RotaProtegida(PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS, PERFIS.GERENTE)
   buscarPorId(@Param('id') id: string) {

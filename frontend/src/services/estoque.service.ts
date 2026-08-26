@@ -101,6 +101,11 @@ export const categoriasItemEstoque: CategoriaItemEstoque[] = [
 ];
 
 export const estoqueService = {
+  async buscarProximoCodigoItem(): Promise<{ codigo: string }> {
+    const { data } = await api.get<{ codigo: string }>('/api/v1/itens-estoque/proximo-codigo');
+    return data;
+  },
+
   async listarItens(filtros: FiltrosItensEstoque): Promise<RespostaPaginada<ItemEstoque>> {
     const { data } = await api.get<RespostaPaginada<ItemEstoque>>('/api/v1/itens-estoque', {
       params: filtros,

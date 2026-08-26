@@ -23,6 +23,14 @@ export function useItemEstoque(id?: string) {
   });
 }
 
+export function useProximoCodigoItemEstoque(enabled: boolean) {
+  return useQuery({
+    queryKey: ['itens-estoque', 'proximo-codigo'],
+    queryFn: () => estoqueService.buscarProximoCodigoItem(),
+    enabled,
+  });
+}
+
 export function useCriarItemEstoque() {
   const queryClient = useQueryClient();
   return useMutation({

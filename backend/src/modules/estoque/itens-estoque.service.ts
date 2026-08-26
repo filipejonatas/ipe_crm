@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { RespostaPaginada } from '@ipe_crm/shared';
-import { Brackets, In, IsNull, Not, Repository } from 'typeorm';
+import { Brackets, In, IsNull, Not, QueryFailedError, Repository } from 'typeorm';
 import { AcaoAuditoria } from '../auditoria/log-auditoria.entity';
 import { AuditoriaService } from '../auditoria/auditoria.service';
 import type { UsuarioAuditoria } from '../fornecedores/fornecedores.service';
@@ -38,34 +38,55 @@ export class ItensEstoqueService {
     dto: CriarItemEstoqueDto,
     usuario?: UsuarioAuditoria,
   ): Promise<RespostaItemEstoqueDto> {
-    const codigo = this.normalizarTextoNullable(dto.codigo);
-    if (codigo) await this.validarCodigoDuplicado(codigo);
+    const codigoInformado = this.normalizarTextoNullable(dto.codigo);
+    const tentativas = codigoInformado ? 1 : 3;
 
-    const item = this.itensRepository.create({
-      codigo,
-      descricao: dto.descricao,
-      marca: this.normalizarTextoNullable(dto.marca),
-      categoria: dto.categoria,
-      unidade_medida: dto.unidade_medida || 'un',
-      saldo_atual: 0,
-      estoque_minimo: dto.estoque_minimo ?? 0,
-      observacoes: this.normalizarTextoNullable(dto.observacoes),
-    });
-    const salvo = await this.itensRepository.save(item);
+    for (let tentativa = 1; tentativa <= tentativas; tentativa += 1) {
+      const codigo = codigoInformado ?? (await this.gerarProximoCodigoDisponivel());
+      if (codigoInformado) await this.validarCodigoDuplicado(codigo);
 
-    await this.registrarAuditoria(AcaoAuditoria.CRIACAO, salvo, null, salvo, usuario);
-
-    if ((dto.saldo_inicial ?? 0) > 0) {
-      await this.movimentacoesEstoqueService.registrarEntrada({
-        item_estoque_id: salvo.id,
-        quantidade: dto.saldo_inicial!,
-        origem: OrigemMovimentacaoEstoque.SALDO_INICIAL,
-        usuarioAtual: usuario,
-        observacoes: 'Saldo inicial',
+      const item = this.itensRepository.create({
+        codigo,
+        descricao: dto.descricao,
+        marca: this.normalizarTextoNullable(dto.marca),
+        categoria: dto.categoria,
+        unidade_medida: dto.unidade_medida || 'un',
+        saldo_atual: 0,
+        estoque_minimo: dto.estoque_minimo ?? 0,
+        observacoes: this.normalizarTextoNullable(dto.observacoes),
       });
+
+      try {
+        const salvo = await this.itensRepository.save(item);
+
+        await this.registrarAuditoria(AcaoAuditoria.CRIACAO, salvo, null, salvo, usuario);
+
+        if ((dto.saldo_inicial ?? 0) > 0) {
+          await this.movimentacoesEstoqueService.registrarEntrada({
+            item_estoque_id: salvo.id,
+            quantidade: dto.saldo_inicial!,
+            origem: OrigemMovimentacaoEstoque.SALDO_INICIAL,
+            usuarioAtual: usuario,
+            observacoes: 'Saldo inicial',
+          });
+        }
+
+        return this.buscarPorId(salvo.id);
+      } catch (error) {
+        if (!this.ehErroCodigoDuplicado(error) || tentativa === tentativas) {
+          if (this.ehErroCodigoDuplicado(error)) {
+            throw new ConflictException('Codigo ja cadastrado');
+          }
+          throw error;
+        }
+      }
     }
 
-    return this.buscarPorId(salvo.id);
+    throw new ConflictException('Nao foi possivel gerar um codigo unico');
+  }
+
+  async proximoCodigo() {
+    return { codigo: await this.gerarProximoCodigoDisponivel() };
   }
 
   async listar(
@@ -199,6 +220,30 @@ export class ItensEstoqueService {
       : { codigo, excluido_em: IsNull() };
     const existente = await this.itensRepository.findOne({ where });
     if (existente) throw new ConflictException('Codigo ja cadastrado');
+  }
+
+  private async gerarProximoCodigoDisponivel() {
+    const resultado = await this.itensRepository
+      .createQueryBuilder('item')
+      .select('COALESCE(MAX(CAST(item.codigo AS integer)), 0)', 'maior_codigo')
+      .where('item.excluido_em IS NULL')
+      .andWhere("item.codigo ~ '^[0-9]+$'")
+      .getRawOne<{ maior_codigo?: string | number }>();
+
+    const maiorCodigo = Number(resultado?.maior_codigo ?? 0);
+    return String(maiorCodigo + 1).padStart(2, '0');
+  }
+
+  private ehErroCodigoDuplicado(error: unknown) {
+    if (!(error instanceof QueryFailedError)) return false;
+    const driverError: unknown = error.driverError;
+    if (!this.temCodigoPostgres(driverError)) return false;
+    return driverError.code === '23505';
+  }
+
+  private temCodigoPostgres(valor: unknown): valor is { code: string } {
+    if (typeof valor !== 'object' || valor === null || !('code' in valor)) return false;
+    return typeof valor.code === 'string';
   }
 
   private normalizarTextoNullable(valor?: string | null) {
