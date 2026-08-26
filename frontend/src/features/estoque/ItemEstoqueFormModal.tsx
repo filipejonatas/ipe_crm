@@ -101,7 +101,11 @@ export function ItemEstoqueFormModal({
       unidade_medida: textoOuUndefined(valores.unidade_medida),
       observacoes: textoOuUndefined(valores.observacoes),
     } as CriarItemEstoqueDto & { ativo?: boolean };
-    if (editando) delete dto.saldo_inicial;
+    if (editando) {
+      delete dto.saldo_inicial;
+    } else {
+      delete dto.ativo;
+    }
     onSalvar(dto);
   }
 

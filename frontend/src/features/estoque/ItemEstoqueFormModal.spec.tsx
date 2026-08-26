@@ -63,6 +63,22 @@ describe('ItemEstoqueFormModal', () => {
     expect(screen.getByRole('option', { name: 'PECA' })).toBeInTheDocument();
   });
 
+  it('nao envia ativo ao cadastrar novo item', async () => {
+    const onSalvar = vi.fn();
+    render(
+      <ItemEstoqueFormModal aberto codigoSugerido="01" onFechar={vi.fn()} onSalvar={onSalvar} />,
+    );
+
+    await userEvent.type(screen.getByLabelText(/descricao/i), 'Filtro');
+    await userEvent.click(screen.getByRole('button', { name: /salvar/i }));
+
+    expect(onSalvar).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        ativo: expect.any(Boolean),
+      }),
+    );
+  });
+
   it('nao exibe campo saldo inicial na edicao', () => {
     render(
       <ItemEstoqueFormModal
