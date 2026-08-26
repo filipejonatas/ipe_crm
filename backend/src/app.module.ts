@@ -9,6 +9,7 @@ import { AuditoriaModule } from './modules/auditoria/auditoria.module';
 import { ConfiguracoesModule } from './modules/configuracoes/configuracoes.module';
 import { EstoqueModule } from './modules/estoque/estoque.module';
 import { FornecedoresModule } from './modules/fornecedores/fornecedores.module';
+import { ManutencoesModule } from './modules/manutencoes/manutencoes.module';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
 import { VeiculosModule } from './modules/veiculos/veiculos.module';
 
@@ -22,6 +23,7 @@ import { VeiculosModule } from './modules/veiculos/veiculos.module';
     FornecedoresModule,
     VeiculosModule,
     EstoqueModule,
+    ManutencoesModule,
     ConfiguracoesModule,
   ],
   controllers: [AppController],
