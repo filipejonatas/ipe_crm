@@ -22,13 +22,13 @@ export class ManutencoesVeiculoController {
   }
 
   @Get()
-  @RotaProtegida(PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS, PERFIS.GERENTE)
+  @RotaProtegida(PERFIS.ADMIN, PERFIS.OFICINA)
   listar(@Query() filtros: FiltrarManutencoesVeiculoDto) {
     return this.manutencoesVeiculoService.listar(filtros);
   }
 
   @Get(':id')
-  @RotaProtegida(PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS, PERFIS.GERENTE)
+  @RotaProtegida(PERFIS.ADMIN, PERFIS.OFICINA)
   buscarPorId(@Param('id') id: string) {
     return this.manutencoesVeiculoService.buscarPorId(id);
   }

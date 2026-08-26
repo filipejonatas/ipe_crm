@@ -6,6 +6,7 @@ import { LoginPage } from '@/features/autenticacao/LoginPage';
 import { ConfiguracoesPage } from '@/features/configuracoes/ConfiguracoesPage';
 import { EstoquePage } from '@/features/estoque/EstoquePage';
 import { FornecedoresPage } from '@/features/fornecedores/FornecedoresPage';
+import { ManutencoesPage } from '@/features/manutencoes/ManutencoesPage';
 import { VeiculosPage } from '@/features/veiculos/VeiculosPage';
 import { PaginaPlaceholder } from '@/pages/PaginaPlaceholder';
 
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
               { path: '/estoque', element: <EstoquePage /> },
               { path: '/veiculos', element: <VeiculosPage /> },
             ],
+          },
+          {
+            element: <RotaPrivada perfis={[PERFIS.ADMIN, PERFIS.OFICINA]} />,
+            children: [{ path: '/manutencoes', element: <ManutencoesPage /> }],
           },
           {
             element: <RotaPrivada perfis={[PERFIS.ADMIN, PERFIS.COMPRAS]} />,
