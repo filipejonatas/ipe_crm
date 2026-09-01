@@ -3,11 +3,18 @@ import userEvent from '@testing-library/user-event';
 import { ItemEstoqueFormModal, itemEstoqueFormSchema } from './ItemEstoqueFormModal';
 
 describe('ItemEstoqueFormModal', () => {
-  it('valida descricao obrigatoria', async () => {
+  it('exibe o fechamento como ícone acessível', () => {
     render(<ItemEstoqueFormModal aberto onFechar={vi.fn()} onSalvar={vi.fn()} />);
-    await userEvent.clear(screen.getByLabelText(/descricao/i));
+    const fechar = screen.getByRole('button', { name: 'Fechar' });
+    expect(fechar).toBeInTheDocument();
+    expect(fechar).not.toHaveTextContent('Fechar');
+  });
+
+  it('valida descrição obrigatória', async () => {
+    render(<ItemEstoqueFormModal aberto onFechar={vi.fn()} onSalvar={vi.fn()} />);
+    await userEvent.clear(screen.getByLabelText(/descrição/i));
     await userEvent.click(screen.getByRole('button', { name: /salvar/i }));
-    expect(await screen.findByText(/descricao e obrigatoria/i)).toBeInTheDocument();
+    expect(await screen.findByText(/descrição é obrigatória/i)).toBeInTheDocument();
   });
 
   it('valida categoria obrigatoria', async () => {
@@ -47,13 +54,13 @@ describe('ItemEstoqueFormModal', () => {
     expect(screen.getByLabelText(/estoque minimo/i)).toHaveAttribute('min', '0');
   });
 
-  it('exibe codigo sugerido ao cadastrar item', () => {
+  it('exibe código sugerido ao cadastrar item', () => {
     render(
       <ItemEstoqueFormModal aberto codigoSugerido="01" onFechar={vi.fn()} onSalvar={vi.fn()} />,
     );
 
-    expect(screen.getByLabelText(/codigo/i)).toHaveValue('01');
-    expect(screen.getByLabelText(/codigo/i)).toHaveAttribute('readonly');
+    expect(screen.getByLabelText(/código/i)).toHaveValue('01');
+    expect(screen.getByLabelText(/código/i)).toHaveAttribute('readonly');
   });
 
   it('exibe categorias em letras maiusculas', () => {
@@ -69,7 +76,7 @@ describe('ItemEstoqueFormModal', () => {
       <ItemEstoqueFormModal aberto codigoSugerido="01" onFechar={vi.fn()} onSalvar={onSalvar} />,
     );
 
-    await userEvent.type(screen.getByLabelText(/descricao/i), 'Filtro');
+    await userEvent.type(screen.getByLabelText(/descrição/i), 'Filtro');
     await userEvent.click(screen.getByRole('button', { name: /salvar/i }));
 
     expect(onSalvar).toHaveBeenCalledWith(

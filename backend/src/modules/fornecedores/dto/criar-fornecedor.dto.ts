@@ -1,11 +1,13 @@
-import { IsBoolean, IsEmail, IsOptional, IsString, Matches } from 'class-validator';
+import { IsBoolean, IsEmail, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 
 export class CriarFornecedorDto {
   @IsString()
+  @MaxLength(80)
   razao_social!: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(40)
   nome_fantasia?: string;
 
   @IsOptional()
@@ -20,6 +22,7 @@ export class CriarFornecedorDto {
 
   @IsOptional()
   @IsEmail()
+  @MaxLength(40)
   email?: string;
 
   @IsOptional()

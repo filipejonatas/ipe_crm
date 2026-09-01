@@ -1,7 +1,11 @@
 import axios from 'axios';
 import { useAutenticacaoStore } from '@/store/autenticacao.store';
 
-const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+// Em desenvolvimento, as chamadas passam pelo proxy do Vite para evitar CORS.
+// No build publicado, o navegador acessa diretamente a URL configurada.
+const apiBaseUrl = import.meta.env.DEV
+  ? ''
+  : (import.meta.env.VITE_API_URL ?? 'http://localhost:3001');
 
 export const api = axios.create({
   baseURL: apiBaseUrl,

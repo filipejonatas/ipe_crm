@@ -11,8 +11,8 @@ export class PecaManutencaoDto {
   descricao_peca?: string;
 
   @Type(() => Number)
-  @IsNumber()
-  @Min(0.001)
+  @IsNumber({ maxDecimalPlaces: 1 })
+  @Min(0.1)
   quantidade!: number;
 
   @Type(() => Number)

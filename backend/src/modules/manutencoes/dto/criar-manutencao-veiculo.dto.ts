@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -26,6 +27,7 @@ export class CriarManutencaoVeiculoDto {
   @Type(() => Number)
   @IsInt()
   @Min(0)
+  @Max(99_999_999)
   quilometragem?: number;
 
   @IsOptional()

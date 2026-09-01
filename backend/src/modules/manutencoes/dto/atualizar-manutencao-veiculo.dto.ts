@@ -1,5 +1,14 @@
 import { Type } from 'class-transformer';
-import { IsDateString, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class AtualizarManutencaoVeiculoDto {
   @IsOptional()
@@ -18,6 +27,7 @@ export class AtualizarManutencaoVeiculoDto {
   @Type(() => Number)
   @IsInt()
   @Min(0)
+  @Max(99_999_999)
   quilometragem?: number;
 
   @IsOptional()

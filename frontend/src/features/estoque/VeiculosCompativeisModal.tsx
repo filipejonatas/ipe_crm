@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BotaoFecharModal } from '@/components/BotaoFecharModal';
 import { ItemEstoque } from '@/services/estoque.service';
 import { useVeiculos } from '@/features/veiculos/hooks/useVeiculos';
 import { useVeiculosCompativeis } from './hooks/useItensEstoque';
@@ -41,9 +42,7 @@ export function VeiculosCompativeisModal({
       <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-md bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-zinc-950">Veiculos compativeis</h2>
-          <button className="text-sm font-medium text-zinc-500" onClick={onFechar} type="button">
-            Fechar
-          </button>
+          <BotaoFecharModal onClick={onFechar} />
         </div>
         <p className="mt-1 text-sm text-zinc-500">{item.descricao}</p>
         <div className="mt-5 divide-y divide-zinc-200 rounded-md border border-zinc-200">
@@ -66,13 +65,15 @@ export function VeiculosCompativeisModal({
           ))}
         </div>
         <div className="mt-5 flex justify-end gap-2">
-          <button
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium"
-            onClick={onFechar}
-            type="button"
-          >
-            {somenteLeitura ? 'Fechar' : 'Cancelar'}
-          </button>
+          {!somenteLeitura && (
+            <button
+              className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium"
+              onClick={onFechar}
+              type="button"
+            >
+              Cancelar
+            </button>
+          )}
           {!somenteLeitura && (
             <button
               className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"

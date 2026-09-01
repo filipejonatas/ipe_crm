@@ -84,7 +84,7 @@ export function FornecedoresPage() {
         <input
           aria-label="Buscar fornecedores"
           className="w-full rounded-md border border-zinc-300 px-3 py-2"
-          placeholder="Buscar por razao social ou fantasia"
+          placeholder="Buscar por razão social ou nome fantasia"
           value={busca}
           onChange={(event) => {
             setPagina(1);
@@ -111,7 +111,7 @@ export function FornecedoresPage() {
           <thead className="bg-zinc-50">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-zinc-500">
-                Razao social
+                Razão social
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-zinc-500">
                 CNPJ
@@ -123,7 +123,7 @@ export function FornecedoresPage() {
                 Status
               </th>
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-zinc-500">
-                Acoes
+                Ações
               </th>
             </tr>
           </thead>
@@ -193,7 +193,7 @@ export function FornecedoresPage() {
           Anterior
         </button>
         <span className="text-sm text-zinc-600">
-          Pagina {pagina} de {totalPaginas}
+          Página {pagina} de {totalPaginas}
         </span>
         <button
           className="rounded-md border border-zinc-300 px-3 py-2 text-sm disabled:opacity-50"
@@ -201,7 +201,7 @@ export function FornecedoresPage() {
           onClick={() => setPagina((valor) => valor + 1)}
           type="button"
         >
-          Proxima
+          Próxima
         </button>
       </div>
 

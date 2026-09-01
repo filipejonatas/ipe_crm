@@ -1,5 +1,6 @@
 import { PERFIS } from '@ipe_crm/shared';
 import { useMemo, useState } from 'react';
+import { IconeAcao } from '@/components/IconeAcao';
 import type { CriarManutencaoVeiculoDto, ManutencaoVeiculo } from '@/services/manutencoes.service';
 import { useAutenticacaoStore } from '@/store/autenticacao.store';
 import { ManutencaoFormModal } from './ManutencaoFormModal';
@@ -64,7 +65,7 @@ export function ManutencoesPage() {
   }
 
   function excluir(manutencao: ManutencaoVeiculo) {
-    if (window.confirm(`Excluir manutencao da placa ${manutencao.placa}?`)) {
+    if (window.confirm(`Excluir manutenção da placa ${manutencao.placa}?`)) {
       void remover.mutate(manutencao.id);
     }
   }
@@ -73,8 +74,8 @@ export function ManutencoesPage() {
     <section className="space-y-5">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-950">Manutencoes</h1>
-          <p className="text-sm text-zinc-500">Historico de servicos realizados por veiculo.</p>
+          <h1 className="text-2xl font-semibold text-zinc-950">Manutenções</h1>
+          <p className="text-sm text-zinc-500">Histórico de serviços realizados por veículo.</p>
         </div>
         {podeGerenciar && (
           <button
@@ -82,15 +83,15 @@ export function ManutencoesPage() {
             onClick={abrirNova}
             type="button"
           >
-            Nova manutencao
+            Nova manutenção
           </button>
         )}
       </div>
 
-      <div className="grid gap-3 rounded-md border border-zinc-200 bg-white p-4 lg:grid-cols-[1fr_180px_180px]">
+      <div className="grid items-center gap-3 rounded-md border border-zinc-200 bg-white p-4 lg:grid-cols-6">
         <input
           aria-label="Buscar por placa"
-          className="rounded-md border border-zinc-300 px-3 py-2"
+          className="rounded-md border border-zinc-300 px-3 py-2 lg:col-span-4"
           placeholder="Buscar por placa"
           value={placa}
           onChange={(event) => {
@@ -127,14 +128,17 @@ export function ManutencoesPage() {
               {[
                 'Data',
                 'Placa',
-                'Manutencao',
-                'Pecas',
+                'Manutenção',
+                'Peças',
                 'Custo total',
                 'Registrado por',
-                'Acoes',
+                'Ações',
               ].map((coluna) => (
                 <th
-                  className="px-4 py-3 text-left text-xs font-semibold uppercase text-zinc-500"
+                  className={[
+                    'px-4 py-3 align-middle text-xs font-semibold uppercase text-zinc-500',
+                    coluna === 'Ações' ? 'text-center' : 'text-left',
+                  ].join(' ')}
                   key={coluna}
                 >
                   {coluna}
@@ -146,24 +150,26 @@ export function ManutencoesPage() {
             {isLoading && (
               <tr>
                 <td className="px-4 py-6 text-sm text-zinc-500" colSpan={7}>
-                  Carregando manutencoes...
+                  Carregando manutenções...
                 </td>
               </tr>
             )}
             {!isLoading && data?.dados.length === 0 && (
               <tr>
                 <td className="px-4 py-6 text-sm text-zinc-500" colSpan={7}>
-                  Nenhuma manutencao encontrada.
+                  Nenhuma manutenção encontrada.
                 </td>
               </tr>
             )}
             {data?.dados.map((manutencao) => (
               <tr key={manutencao.id}>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-600">
+                <td className="whitespace-nowrap px-4 py-3 align-middle text-sm text-zinc-600">
                   {formatarData(manutencao.data_manutencao)}
                 </td>
-                <td className="px-4 py-3 text-sm font-medium text-zinc-900">{manutencao.placa}</td>
-                <td className="max-w-sm px-4 py-3 text-sm text-zinc-700">
+                <td className="px-4 py-3 align-middle text-sm font-medium text-zinc-900">
+                  {manutencao.placa}
+                </td>
+                <td className="max-w-sm px-4 py-3 align-middle text-sm text-zinc-700">
                   <p className="line-clamp-2">{manutencao.descricao}</p>
                   {manutencao.quilometragem !== null && (
                     <p className="mt-1 text-xs text-zinc-500">
@@ -171,7 +177,7 @@ export function ManutencoesPage() {
                     </p>
                   )}
                 </td>
-                <td className="px-4 py-3 text-sm text-zinc-600">
+                <td className="px-4 py-3 align-middle text-sm text-zinc-600">
                   {manutencao.pecas.length > 0 ? (
                     <div className="space-y-1">
                       {manutencao.pecas.slice(0, 2).map((peca) => (
@@ -181,7 +187,7 @@ export function ManutencoesPage() {
                       ))}
                       {manutencao.pecas.length > 2 && (
                         <p className="text-xs text-zinc-500">
-                          +{manutencao.pecas.length - 2} peca(s)
+                          +{manutencao.pecas.length - 2} peça(s)
                         </p>
                       )}
                     </div>
@@ -189,30 +195,34 @@ export function ManutencoesPage() {
                     '-'
                   )}
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-zinc-900">
+                <td className="whitespace-nowrap px-4 py-3 align-middle text-sm font-medium text-zinc-900">
                   {formatarMoeda(manutencao.custo_total)}
                 </td>
-                <td className="px-4 py-3 text-sm text-zinc-600">
+                <td className="px-4 py-3 align-middle text-sm text-zinc-600">
                   {manutencao.usuario_nome ?? '-'}
                 </td>
-                <td className="px-4 py-3 text-sm">
-                  <div className="flex flex-wrap justify-end gap-2">
+                <td className="px-4 py-3 align-middle text-sm">
+                  <div className="flex flex-nowrap items-center justify-center gap-2">
                     {podeGerenciar && (
                       <button
-                        className="font-medium text-emerald-700"
+                        aria-label="Editar manutenção"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-emerald-200 text-emerald-700 transition hover:bg-emerald-50"
                         onClick={() => editar(manutencao)}
+                        title="Editar manutenção"
                         type="button"
                       >
-                        Editar
+                        <IconeAcao tipo="editar" />
                       </button>
                     )}
                     {usuario?.perfil === PERFIS.ADMIN && (
                       <button
-                        className="font-medium text-red-700"
+                        aria-label="Excluir manutenção"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-red-200 text-red-700 transition hover:bg-red-50"
                         onClick={() => excluir(manutencao)}
+                        title="Excluir manutenção"
                         type="button"
                       >
-                        Excluir
+                        <IconeAcao tipo="excluir" />
                       </button>
                     )}
                   </div>
@@ -233,7 +243,7 @@ export function ManutencoesPage() {
           Anterior
         </button>
         <span className="text-sm text-zinc-600">
-          Pagina {pagina} de {totalPaginas}
+          Página {pagina} de {totalPaginas}
         </span>
         <button
           className="rounded-md border border-zinc-300 px-3 py-2 text-sm disabled:opacity-50"
@@ -241,7 +251,7 @@ export function ManutencoesPage() {
           onClick={() => setPagina((valor) => valor + 1)}
           type="button"
         >
-          Proxima
+          Próxima
         </button>
       </div>
 

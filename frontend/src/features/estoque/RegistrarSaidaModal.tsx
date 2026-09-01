@@ -1,6 +1,7 @@
 import { AxiosError } from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { BotaoFecharModal } from '@/components/BotaoFecharModal';
 import { ItemEstoque, RegistrarSaidaDto } from '@/services/estoque.service';
 import { useVeiculos } from '@/features/veiculos/hooks/useVeiculos';
 import { useVeiculosCompativeis } from './hooks/useItensEstoque';
@@ -87,9 +88,7 @@ export function RegistrarSaidaModal({ aberto, item, salvando, erro, onFechar, on
       <div className="w-full max-w-xl rounded-md bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-zinc-950">Registrar saida</h2>
-          <button className="text-sm font-medium text-zinc-500" onClick={onFechar} type="button">
-            Fechar
-          </button>
+          <BotaoFecharModal onClick={onFechar} />
         </div>
         <form className="mt-5 space-y-4" onSubmit={handleSubmit(salvar)}>
           <label className="block">
@@ -128,7 +127,7 @@ export function RegistrarSaidaModal({ aberto, item, salvando, erro, onFechar, on
             </select>
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-zinc-700">Observacoes</span>
+            <span className="text-sm font-medium text-zinc-700">Observações</span>
             <textarea
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
               rows={3}

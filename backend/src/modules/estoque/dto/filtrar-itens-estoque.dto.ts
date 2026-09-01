@@ -37,6 +37,6 @@ export class FiltrarItensEstoqueDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(100)
+  @Max(10)
   limite?: number;
 }

@@ -1,5 +1,6 @@
 import { PERFIS } from '@ipe_crm/shared';
 import { useMemo, useState } from 'react';
+import { IconeAcao } from '@/components/IconeAcao';
 import {
   CategoriaItemEstoque,
   categoriasItemEstoque,
@@ -97,7 +98,7 @@ export function EstoquePage() {
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-2xl font-semibold text-zinc-950">Estoque</h1>
-          <p className="text-sm text-zinc-500">Itens, saldos e movimentacoes da oficina.</p>
+          <p className="text-sm text-zinc-500">Itens, saldos e movimentações da oficina.</p>
         </div>
         {podeCriarEditar && (
           <button
@@ -114,7 +115,7 @@ export function EstoquePage() {
         <input
           aria-label="Buscar itens"
           className="rounded-md border border-zinc-300 px-3 py-2"
-          placeholder="Buscar por codigo, descricao ou marca"
+          placeholder="Buscar por código, descrição ou marca"
           value={busca}
           onChange={(event) => {
             setPagina(1);
@@ -169,19 +170,22 @@ export function EstoquePage() {
           <thead className="bg-zinc-50">
             <tr>
               {[
-                'Codigo',
-                'Descricao',
+                'Código',
+                'Descrição',
                 'Marca',
                 'Categoria',
                 'Saldo atual',
-                'Estoque minimo',
+                'Estoque mínimo',
                 'Unidade',
                 'Status',
-                'Acoes',
+                'Ações',
               ].map((coluna) => (
                 <th
                   key={coluna}
-                  className="px-4 py-3 text-left text-xs font-semibold uppercase text-zinc-500"
+                  className={[
+                    'px-4 py-3 text-xs font-semibold uppercase text-zinc-500',
+                    coluna === 'Ações' ? 'text-center' : 'text-left',
+                  ].join(' ')}
                 >
                   {coluna}
                 </th>
@@ -221,57 +225,69 @@ export function EstoquePage() {
                   <td className="px-4 py-3 text-sm text-zinc-600">
                     {item.ativo ? 'Ativo' : 'Inativo'}
                   </td>
-                  <td className="px-4 py-3 text-sm">
-                    <div className="flex flex-wrap justify-end gap-2">
+                  <td className="px-4 py-3 align-middle text-sm">
+                    <div className="flex flex-nowrap items-center justify-center gap-2">
                       {podeCriarEditar && (
                         <button
-                          className="font-medium text-emerald-700"
+                          aria-label="Editar item"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-emerald-200 text-emerald-700 transition hover:bg-emerald-50"
                           onClick={() => abrir('item', item)}
+                          title="Editar item"
                           type="button"
                         >
-                          Editar
+                          <IconeAcao tipo="editar" />
                         </button>
                       )}
                       {podeExcluir && (
                         <button
-                          className="font-medium text-red-700"
+                          aria-label="Excluir item"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-red-200 text-red-700 transition hover:bg-red-50"
                           onClick={() => excluir(item)}
+                          title="Excluir item"
                           type="button"
                         >
-                          Excluir
+                          <IconeAcao tipo="excluir" />
                         </button>
                       )}
                       {podeRegistrarSaida && (
                         <button
-                          className="font-medium text-blue-700"
+                          aria-label="Registrar saída"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-blue-200 text-blue-700 transition hover:bg-blue-50"
                           onClick={() => abrir('saida', item)}
+                          title="Registrar saída"
                           type="button"
                         >
-                          Registrar saida
+                          <IconeAcao tipo="saida" />
                         </button>
                       )}
                       {podeAjustar && (
                         <button
-                          className="font-medium text-violet-700"
+                          aria-label="Ajustar saldo"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-violet-200 text-violet-700 transition hover:bg-violet-50"
                           onClick={() => abrir('ajuste', item)}
+                          title="Ajustar saldo"
                           type="button"
                         >
-                          Ajustar saldo
+                          <IconeAcao tipo="ajustar" />
                         </button>
                       )}
                       <button
-                        className="font-medium text-zinc-700"
+                        aria-label="Veículos compatíveis"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-300 text-zinc-700 transition hover:bg-zinc-100"
                         onClick={() => abrir('veiculos', item)}
+                        title="Veículos compatíveis"
                         type="button"
                       >
-                        Veiculos
+                        <IconeAcao tipo="veiculos" />
                       </button>
                       <button
-                        className="font-medium text-zinc-700"
+                        aria-label="Histórico de movimentações"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-300 text-zinc-700 transition hover:bg-zinc-100"
                         onClick={() => abrir('historico', item)}
+                        title="Histórico de movimentações"
                         type="button"
                       >
-                        Historico
+                        <IconeAcao tipo="historico" />
                       </button>
                     </div>
                   </td>
@@ -292,7 +308,7 @@ export function EstoquePage() {
           Anterior
         </button>
         <span className="text-sm text-zinc-600">
-          Pagina {pagina} de {totalPaginas}
+          Página {pagina} de {totalPaginas}
         </span>
         <button
           className="rounded-md border border-zinc-300 px-3 py-2 text-sm disabled:opacity-50"
@@ -300,7 +316,7 @@ export function EstoquePage() {
           onClick={() => setPagina((valor) => valor + 1)}
           type="button"
         >
-          Proxima
+          Próxima
         </button>
       </div>
 

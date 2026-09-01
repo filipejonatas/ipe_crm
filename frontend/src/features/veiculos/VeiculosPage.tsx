@@ -1,5 +1,6 @@
 import { PERFIS } from '@ipe_crm/shared';
 import { useMemo, useState } from 'react';
+import { IconeAcao } from '@/components/IconeAcao';
 import type { CriarVeiculoDto, Veiculo } from '@/services/veiculos.service';
 import { useAutenticacaoStore } from '@/store/autenticacao.store';
 import { VeiculoFormModal } from './VeiculoFormModal';
@@ -64,8 +65,8 @@ export function VeiculosPage() {
     <section className="space-y-5">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-950">Veiculos</h1>
-          <p className="text-sm text-zinc-500">Frota disponivel para oficina, compras e gestao.</p>
+          <h1 className="text-2xl font-semibold text-zinc-950">Veículos</h1>
+          <p className="text-sm text-zinc-500">Frota disponível para oficina, compras e gestão.</p>
         </div>
         {podeGerenciar && (
           <button
@@ -73,14 +74,14 @@ export function VeiculosPage() {
             onClick={abrirNovo}
             type="button"
           >
-            Novo Veiculo
+            Novo veículo
           </button>
         )}
       </div>
 
       <div className="flex flex-col gap-3 rounded-md border border-zinc-200 bg-white p-4 sm:flex-row">
         <input
-          aria-label="Buscar veiculos"
+          aria-label="Buscar veículos"
           className="w-full rounded-md border border-zinc-300 px-3 py-2"
           placeholder="Buscar por placa, modelo ou marca"
           value={busca}
@@ -104,7 +105,7 @@ export function VeiculosPage() {
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-md border border-zinc-200 bg-white">
+      <div className="overflow-x-auto rounded-md border border-zinc-200 bg-white">
         <table className="min-w-full divide-y divide-zinc-200">
           <thead className="bg-zinc-50">
             <tr>
@@ -115,63 +116,68 @@ export function VeiculosPage() {
                 Modelo
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-zinc-500">
+                Ano
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-zinc-500">
                 Marca
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-zinc-500">
                 Status
               </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-zinc-500">
-                Acoes
+              <th className="px-4 py-3 text-center text-xs font-semibold uppercase text-zinc-500">
+                Ações
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200">
             {isLoading && (
               <tr>
-                <td className="px-4 py-6 text-sm text-zinc-500" colSpan={5}>
-                  Carregando veiculos...
+                <td className="px-4 py-6 text-sm text-zinc-500" colSpan={6}>
+                  Carregando veículos...
                 </td>
               </tr>
             )}
             {!isLoading && data?.dados.length === 0 && (
               <tr>
-                <td className="px-4 py-6 text-sm text-zinc-500" colSpan={5}>
-                  Nenhum veiculo encontrado.
+                <td className="px-4 py-6 text-sm text-zinc-500" colSpan={6}>
+                  Nenhum veículo encontrado.
                 </td>
               </tr>
             )}
             {data?.dados.map((veiculo) => (
               <tr key={veiculo.id}>
                 <td className="px-4 py-3 text-sm font-medium text-zinc-900">{veiculo.placa}</td>
-                <td className="px-4 py-3 text-sm text-zinc-600">
-                  {veiculo.modelo}
-                  {veiculo.ano ? ` / ${veiculo.ano}` : ''}
-                </td>
+                <td className="px-4 py-3 text-sm text-zinc-600">{veiculo.modelo}</td>
+                <td className="px-4 py-3 text-sm text-zinc-600">{veiculo.ano ?? '-'}</td>
                 <td className="px-4 py-3 text-sm text-zinc-600">{veiculo.marca}</td>
                 <td className="px-4 py-3 text-sm text-zinc-600">
                   {veiculo.ativo ? 'Ativo' : 'Inativo'}
                 </td>
-                <td className="px-4 py-3 text-right text-sm">
+                <td className="px-4 py-3 align-middle text-sm">
                   {podeGerenciar && (
-                    <>
+                    <div className="flex flex-nowrap items-center justify-center gap-2">
                       <button
-                        className="mr-3 font-medium text-emerald-700"
+                        aria-label="Editar veículo"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-emerald-200 text-emerald-700 transition hover:bg-emerald-50"
                         onClick={() => {
                           setSelecionado(veiculo);
                           setModalAberto(true);
                         }}
+                        title="Editar veículo"
                         type="button"
                       >
-                        Editar
+                        <IconeAcao tipo="editar" />
                       </button>
                       <button
-                        className="font-medium text-red-700"
+                        aria-label="Excluir veículo"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-red-200 text-red-700 transition hover:bg-red-50"
                         onClick={() => excluir(veiculo)}
+                        title="Excluir veículo"
                         type="button"
                       >
-                        Excluir
+                        <IconeAcao tipo="excluir" />
                       </button>
-                    </>
+                    </div>
                   )}
                 </td>
               </tr>
@@ -190,7 +196,7 @@ export function VeiculosPage() {
           Anterior
         </button>
         <span className="text-sm text-zinc-600">
-          Pagina {pagina} de {totalPaginas}
+          Página {pagina} de {totalPaginas}
         </span>
         <button
           className="rounded-md border border-zinc-300 px-3 py-2 text-sm disabled:opacity-50"
@@ -198,7 +204,7 @@ export function VeiculosPage() {
           onClick={() => setPagina((valor) => valor + 1)}
           type="button"
         >
-          Proxima
+          Próxima
         </button>
       </div>
 

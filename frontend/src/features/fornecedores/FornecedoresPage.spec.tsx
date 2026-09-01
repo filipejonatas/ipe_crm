@@ -53,7 +53,7 @@ describe('FornecedoresPage', () => {
     expect(screen.getByText('00.000.000/0001-00')).toBeInTheDocument();
   });
 
-  it('exibe mensagem quando lista esta vazia', async () => {
+  it('exibe mensagem quando lista está vazia', async () => {
     const hooks = await import('./hooks/useFornecedores');
     vi.mocked(hooks.useFornecedores).mockReturnValueOnce({
       data: { dados: [], total: 0, pagina: 1, limite: 10 },
@@ -73,7 +73,7 @@ describe('FornecedoresPage', () => {
     expect(screen.getByRole('heading', { name: /novo fornecedor/i })).toBeInTheDocument();
   });
 
-  it('oculta acoes de escrita para perfil gerente', () => {
+  it('oculta ações de escrita para perfil gerente', () => {
     useAutenticacaoStore.setState({
       usuario: {
         id: 'usuario-2',
@@ -90,7 +90,7 @@ describe('FornecedoresPage', () => {
     expect(screen.queryByRole('button', { name: /excluir/i })).not.toBeInTheDocument();
   });
 
-  it('permite compras criar e editar, mas nao excluir', () => {
+  it('permite compras criar e editar, mas não excluir', () => {
     useAutenticacaoStore.setState({
       usuario: {
         id: 'usuario-3',

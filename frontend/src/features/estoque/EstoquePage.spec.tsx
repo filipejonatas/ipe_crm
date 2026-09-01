@@ -95,6 +95,14 @@ describe('EstoquePage', () => {
     expect(screen.getByText('Filtro de oleo')).toBeInTheDocument();
   });
 
+  it('solicita no máximo 10 itens por página', async () => {
+    const hooks = await import('./hooks/useItensEstoque');
+    render(<EstoquePage />);
+    expect(vi.mocked(hooks.useItensEstoque)).toHaveBeenCalledWith(
+      expect.objectContaining({ pagina: 1, limite: 10 }),
+    );
+  });
+
   it('exibe mensagem quando lista esta vazia', async () => {
     const hooks = await import('./hooks/useItensEstoque');
     vi.mocked(hooks.useItensEstoque).mockReturnValueOnce({
@@ -129,9 +137,9 @@ describe('EstoquePage', () => {
     expect(screen.getByRole('heading', { name: /novo item/i })).toBeInTheDocument();
   });
 
-  it('abre modal de historico de utilizacao do filtro', async () => {
+  it('abre modal de histórico de utilização do filtro', async () => {
     render(<EstoquePage />);
-    await userEvent.click(screen.getByRole('button', { name: /historico/i }));
-    expect(screen.getByRole('heading', { name: /historico/i })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /histórico/i }));
+    expect(screen.getByRole('heading', { name: /hist[oó]rico/i })).toBeInTheDocument();
   });
 });

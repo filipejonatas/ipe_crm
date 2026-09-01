@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { BotaoFecharModal } from '@/components/BotaoFecharModal';
 import {
   ItemEstoque,
   OrigemMovimentacaoEstoque,
@@ -47,9 +48,7 @@ export function HistoricoMovimentacoesModal({ aberto, item, onFechar }: Props) {
             <h2 className="text-lg font-semibold text-zinc-950">Historico</h2>
             <p className="text-sm text-zinc-500">{item.descricao}</p>
           </div>
-          <button className="text-sm font-medium text-zinc-500" onClick={onFechar} type="button">
-            Fechar
-          </button>
+          <BotaoFecharModal onClick={onFechar} />
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-4">
@@ -108,7 +107,7 @@ export function HistoricoMovimentacoesModal({ aberto, item, onFechar }: Props) {
                   'Posterior',
                   'Veiculo',
                   'Usuario',
-                  'Observacoes',
+                  'Observações',
                 ].map((coluna) => (
                   <th
                     key={coluna}

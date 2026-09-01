@@ -100,7 +100,7 @@ export class VeiculosService {
     });
 
     if (!veiculo) {
-      throw new NotFoundException('Veiculo nao encontrado');
+      throw new NotFoundException('Veículo não encontrado');
     }
 
     return veiculo;
@@ -113,7 +113,7 @@ export class VeiculosService {
     const existente = await this.veiculosRepository.findOne({ where });
 
     if (existente) {
-      throw new ConflictException('Placa ja cadastrada');
+      throw new ConflictException('Placa já cadastrada');
     }
   }
 

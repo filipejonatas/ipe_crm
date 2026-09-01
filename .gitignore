@@ -10,4 +10,4 @@ coverage
 .turbo
 .DS_Store
 Thumbs.db
-backend/src/database/seeds/seed-usuarios-teste.ts
+backend/src/database/seeds/

@@ -1,8 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { BotaoFecharModal } from '@/components/BotaoFecharModal';
 import type { Fornecedor } from '@/services/fornecedores.service';
-import { FornecedorFormValues, fornecedorFormSchema } from './fornecedor.schema';
+import {
+  FornecedorFormValues,
+  fornecedorFormSchema,
+  LIMITES_FORNECEDOR,
+} from './fornecedor.schema';
 
 interface Props {
   aberto: boolean;
@@ -70,20 +75,15 @@ export function FornecedorFormModal({ aberto, fornecedor, salvando, onFechar, on
           <h2 className="text-lg font-semibold text-zinc-950">
             {fornecedor ? 'Editar Fornecedor' : 'Novo Fornecedor'}
           </h2>
-          <button
-            className="text-sm font-medium text-zinc-500 hover:text-zinc-900"
-            onClick={onFechar}
-            type="button"
-          >
-            Fechar
-          </button>
+          <BotaoFecharModal onClick={onFechar} />
         </div>
 
         <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit(onSalvar)}>
           <label className="sm:col-span-2">
-            <span className="text-sm font-medium text-zinc-700">Razao social</span>
+            <span className="text-sm font-medium text-zinc-700">Razão social</span>
             <input
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+              maxLength={LIMITES_FORNECEDOR.razaoSocial}
               {...register('razao_social')}
             />
             {errors.razao_social && (
@@ -94,6 +94,7 @@ export function FornecedorFormModal({ aberto, fornecedor, salvando, onFechar, on
             <span className="text-sm font-medium text-zinc-700">Nome fantasia</span>
             <input
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+              maxLength={LIMITES_FORNECEDOR.nomeFantasia}
               {...register('nome_fantasia')}
             />
           </label>
@@ -132,15 +133,17 @@ export function FornecedorFormModal({ aberto, fornecedor, salvando, onFechar, on
             )}
           </label>
           <label>
-            <span className="text-sm font-medium text-zinc-700">Email</span>
+            <span className="text-sm font-medium text-zinc-700">E-mail</span>
             <input
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+              maxLength={LIMITES_FORNECEDOR.email}
+              type="email"
               {...register('email')}
             />
             {errors.email && <span className="text-xs text-red-600">{errors.email.message}</span>}
           </label>
           <label className="sm:col-span-2">
-            <span className="text-sm font-medium text-zinc-700">Observacoes</span>
+            <span className="text-sm font-medium text-zinc-700">Observações</span>
             <textarea
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
               rows={3}

@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { BotaoFecharModal } from '@/components/BotaoFecharModal';
 import { ItemEstoque, RegistrarAjusteDto } from '@/services/estoque.service';
 
 const ajusteSchema = z.object({
@@ -41,9 +42,7 @@ export function RegistrarAjusteModal({ aberto, item, salvando, onFechar, onSalva
       <div className="w-full max-w-lg rounded-md bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-zinc-950">Ajustar saldo</h2>
-          <button className="text-sm font-medium text-zinc-500" onClick={onFechar} type="button">
-            Fechar
-          </button>
+          <BotaoFecharModal onClick={onFechar} />
         </div>
         <form
           className="mt-5 space-y-4"

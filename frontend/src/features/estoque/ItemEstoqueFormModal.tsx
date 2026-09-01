@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { BotaoFecharModal } from '@/components/BotaoFecharModal';
 import {
   categoriasItemEstoque,
   CriarItemEstoqueDto,
@@ -14,7 +15,7 @@ const numeroInteiroNaoNegativo = (campo: string) =>
 
 export const itemEstoqueFormSchema = z.object({
   codigo: textoOpcional,
-  descricao: z.string().trim().min(1, 'Descricao e obrigatoria'),
+  descricao: z.string().trim().min(1, 'Descrição é obrigatória'),
   marca: textoOpcional,
   categoria: z
     .string()
@@ -116,14 +117,12 @@ export function ItemEstoqueFormModal({
           <h2 className="text-lg font-semibold text-zinc-950">
             {editando ? 'Editar item' : 'Novo item'}
           </h2>
-          <button className="text-sm font-medium text-zinc-500" onClick={onFechar} type="button">
-            Fechar
-          </button>
+          <BotaoFecharModal onClick={onFechar} />
         </div>
 
         <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit(salvar)}>
           <label>
-            <span className="text-sm font-medium text-zinc-700">Codigo</span>
+            <span className="text-sm font-medium text-zinc-700">Código</span>
             <input
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 read-only:bg-zinc-100 read-only:text-zinc-500"
               placeholder={editando ? undefined : 'Gerando...'}
@@ -149,7 +148,7 @@ export function ItemEstoqueFormModal({
             )}
           </label>
           <label className="sm:col-span-2">
-            <span className="text-sm font-medium text-zinc-700">Descricao</span>
+            <span className="text-sm font-medium text-zinc-700">Descrição</span>
             <input
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
               {...register('descricao')}
@@ -207,7 +206,7 @@ export function ItemEstoqueFormModal({
             </label>
           )}
           <label className="sm:col-span-2">
-            <span className="text-sm font-medium text-zinc-700">Observacoes</span>
+            <span className="text-sm font-medium text-zinc-700">Observações</span>
             <textarea
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
               rows={3}

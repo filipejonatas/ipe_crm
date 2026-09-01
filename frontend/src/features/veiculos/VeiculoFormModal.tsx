@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { BotaoFecharModal } from '@/components/BotaoFecharModal';
 import type { Veiculo } from '@/services/veiculos.service';
-import { VeiculoFormValues, veiculoFormSchema } from './veiculo.schema';
+import { LIMITES_VEICULO, VeiculoFormValues, veiculoFormSchema } from './veiculo.schema';
 
 interface Props {
   aberto: boolean;
@@ -21,11 +22,19 @@ const valoresPadrao: VeiculoFormValues = {
   ativo: true,
 };
 
+function normalizarPlaca(valor: string) {
+  return valor
+    .replace(/[^A-Za-z0-9]/g, '')
+    .toUpperCase()
+    .slice(0, LIMITES_VEICULO.placa);
+}
+
 export function VeiculoFormModal({ aberto, veiculo, salvando, onFechar, onSalvar }: Props) {
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<VeiculoFormValues>({
     resolver: zodResolver(veiculoFormSchema),
@@ -36,7 +45,7 @@ export function VeiculoFormModal({ aberto, veiculo, salvando, onFechar, onSalvar
     reset(
       veiculo
         ? {
-            placa: veiculo.placa,
+            placa: normalizarPlaca(veiculo.placa),
             modelo: veiculo.modelo,
             marca: veiculo.marca,
             ano: veiculo.ano ?? '',
@@ -54,15 +63,9 @@ export function VeiculoFormModal({ aberto, veiculo, salvando, onFechar, onSalvar
       <div className="w-full max-w-2xl rounded-md bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-zinc-950">
-            {veiculo ? 'Editar Veiculo' : 'Novo Veiculo'}
+            {veiculo ? 'Editar veículo' : 'Novo veículo'}
           </h2>
-          <button
-            className="text-sm font-medium text-zinc-500 hover:text-zinc-900"
-            onClick={onFechar}
-            type="button"
-          >
-            Fechar
-          </button>
+          <BotaoFecharModal onClick={onFechar} />
         </div>
 
         <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit(onSalvar)}>
@@ -70,7 +73,14 @@ export function VeiculoFormModal({ aberto, veiculo, salvando, onFechar, onSalvar
             <span className="text-sm font-medium text-zinc-700">Placa</span>
             <input
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 uppercase"
-              {...register('placa')}
+              maxLength={LIMITES_VEICULO.placa}
+              {...register('placa', {
+                onChange: (event) => {
+                  setValue('placa', normalizarPlaca(String(event.target.value)), {
+                    shouldValidate: true,
+                  });
+                },
+              })}
             />
             {errors.placa && <span className="text-xs text-red-600">{errors.placa.message}</span>}
           </label>
@@ -78,15 +88,28 @@ export function VeiculoFormModal({ aberto, veiculo, salvando, onFechar, onSalvar
             <span className="text-sm font-medium text-zinc-700">Ano</span>
             <input
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
-              type="number"
-              {...register('ano')}
+              inputMode="numeric"
+              maxLength={LIMITES_VEICULO.ano}
+              pattern="[0-9]*"
+              type="text"
+              {...register('ano', {
+                onChange: (event) => {
+                  const digitos = String(event.target.value)
+                    .replace(/\D/g, '')
+                    .slice(0, LIMITES_VEICULO.ano);
+                  setValue('ano', digitos === '' ? '' : Number(digitos), {
+                    shouldValidate: true,
+                  });
+                },
+              })}
             />
-            {errors.ano && <span className="text-xs text-red-600">Ano invalido</span>}
+            {errors.ano && <span className="text-xs text-red-600">{errors.ano.message}</span>}
           </label>
           <label>
             <span className="text-sm font-medium text-zinc-700">Modelo</span>
             <input
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+              maxLength={LIMITES_VEICULO.modelo}
               {...register('modelo')}
             />
             {errors.modelo && <span className="text-xs text-red-600">{errors.modelo.message}</span>}
@@ -95,12 +118,13 @@ export function VeiculoFormModal({ aberto, veiculo, salvando, onFechar, onSalvar
             <span className="text-sm font-medium text-zinc-700">Marca</span>
             <input
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+              maxLength={LIMITES_VEICULO.marca}
               {...register('marca')}
             />
             {errors.marca && <span className="text-xs text-red-600">{errors.marca.message}</span>}
           </label>
           <label className="sm:col-span-2">
-            <span className="text-sm font-medium text-zinc-700">Observacoes</span>
+            <span className="text-sm font-medium text-zinc-700">Observações</span>
             <textarea
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
               rows={3}

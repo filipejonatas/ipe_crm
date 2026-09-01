@@ -93,7 +93,7 @@ export class ItensEstoqueService {
     filtros: FiltrarItensEstoqueDto = {},
   ): Promise<RespostaPaginada<RespostaItemEstoqueDto>> {
     const pagina = Math.max(Number(filtros.pagina) || 1, 1);
-    const limite = Math.min(Math.max(Number(filtros.limite) || 10, 1), 100);
+    const limite = Math.min(Math.max(Number(filtros.limite) || 10, 1), 10);
     const query = this.itensRepository.createQueryBuilder('item').where('item.excluido_em IS NULL');
 
     if (filtros.busca) {

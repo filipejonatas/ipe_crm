@@ -45,11 +45,13 @@ describe('VeiculosPage', () => {
     });
   });
 
-  it('renderiza a tabela de veiculos', () => {
+  it('renderiza a tabela de veículos com ano separado do modelo', () => {
     render(<VeiculosPage />);
 
     expect(screen.getByText('ABC1234')).toBeInTheDocument();
-    expect(screen.getByText(/cargo/i)).toBeInTheDocument();
+    expect(screen.getByText('Cargo')).toBeInTheDocument();
+    expect(screen.getByText('2020')).toBeInTheDocument();
+    expect(screen.getByText('Cargo')).not.toHaveTextContent('2020');
   });
 
   it('exibe mensagem quando lista esta vazia', async () => {
@@ -61,18 +63,18 @@ describe('VeiculosPage', () => {
 
     render(<VeiculosPage />);
 
-    expect(screen.getByText(/nenhum veiculo encontrado/i)).toBeInTheDocument();
+    expect(screen.getByText(/nenhum veículo encontrado/i)).toBeInTheDocument();
   });
 
-  it('abre modal ao clicar em Novo Veiculo', async () => {
+  it('abre modal ao clicar em Novo veículo', async () => {
     render(<VeiculosPage />);
 
-    await userEvent.click(screen.getByRole('button', { name: /novo veiculo/i }));
+    await userEvent.click(screen.getByRole('button', { name: /novo veículo/i }));
 
-    expect(screen.getByRole('heading', { name: /novo veiculo/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /novo veículo/i })).toBeInTheDocument();
   });
 
-  it('oculta acoes de escrita para perfil oficina', () => {
+  it('oculta ações de escrita para perfil oficina', () => {
     useAutenticacaoStore.setState({
       usuario: {
         id: 'usuario-2',
@@ -84,7 +86,7 @@ describe('VeiculosPage', () => {
 
     render(<VeiculosPage />);
 
-    expect(screen.queryByRole('button', { name: /novo veiculo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /novo veículo/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /editar/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /excluir/i })).not.toBeInTheDocument();
   });

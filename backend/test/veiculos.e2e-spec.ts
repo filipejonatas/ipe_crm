@@ -98,6 +98,30 @@ describe('VeiculosController (e2e)', () => {
       .expect(201);
   });
 
+  it('POST /api/v1/veiculos rejeita placa diferente de 7 caracteres', () => {
+    return request(servidor)
+      .post('/api/v1/veiculos')
+      .set('Authorization', `Bearer ${token(PERFIS.ADMIN)}`)
+      .send({ placa: 'ABC123', modelo: 'Cargo', marca: 'Ford' })
+      .expect(400);
+  });
+
+  it('POST /api/v1/veiculos rejeita modelo ou marca acima de 20 caracteres', async () => {
+    const textoLongo = 'A'.repeat(21);
+
+    await request(servidor)
+      .post('/api/v1/veiculos')
+      .set('Authorization', `Bearer ${token(PERFIS.ADMIN)}`)
+      .send({ placa: 'ABC1234', modelo: textoLongo, marca: 'Ford' })
+      .expect(400);
+
+    await request(servidor)
+      .post('/api/v1/veiculos')
+      .set('Authorization', `Bearer ${token(PERFIS.ADMIN)}`)
+      .send({ placa: 'DEF5678', modelo: 'Cargo', marca: textoLongo })
+      .expect(400);
+  });
+
   it('POST /api/v1/veiculos com placa duplicada retorna 409', async () => {
     veiculos.push({
       id: 'veiculo-1',

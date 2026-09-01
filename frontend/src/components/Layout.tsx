@@ -15,30 +15,21 @@ const menus: MenuItem[] = [
     caminho: '/estoque',
     perfis: [PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS, PERFIS.GERENTE],
   },
-  { nome: 'Compras', caminho: '/compras', perfis: [PERFIS.ADMIN, PERFIS.COMPRAS] },
   {
     nome: 'Fornecedores',
     caminho: '/fornecedores',
     perfis: [PERFIS.ADMIN, PERFIS.COMPRAS, PERFIS.ADMINISTRATIVO, PERFIS.GERENTE],
   },
   {
-    nome: 'Veiculos',
+    nome: 'Veículos',
     caminho: '/veiculos',
     perfis: [PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS, PERFIS.GERENTE],
   },
   {
-    nome: 'Manutencoes',
+    nome: 'Manutenções',
     caminho: '/manutencoes',
     perfis: [PERFIS.ADMIN, PERFIS.OFICINA],
   },
-  { nome: 'Cotacoes', caminho: '/cotacoes', perfis: [PERFIS.ADMIN, PERFIS.COMPRAS] },
-  {
-    nome: 'Contratos',
-    caminho: '/contratos',
-    perfis: [PERFIS.ADMIN, PERFIS.ADMINISTRATIVO, PERFIS.GERENTE],
-  },
-  { nome: 'Usuarios', caminho: '/usuarios', perfis: [PERFIS.ADMIN] },
-  { nome: 'Configuracoes', caminho: '/configuracoes', perfis: [PERFIS.ADMIN] },
 ];
 
 export function Layout() {
