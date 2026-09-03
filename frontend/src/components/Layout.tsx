@@ -52,8 +52,8 @@ export function Layout() {
     setMenuAberto(false);
   }
 
-  const larguraDesktop = menuExpandido ? 'md:w-64' : 'md:w-16';
-  const recuoConteudo = menuExpandido ? 'md:pl-64' : 'md:pl-16';
+  const larguraDesktop = menuExpandido ? 'md:w-64' : 'md:w-20';
+  const recuoConteudo = menuExpandido ? 'md:pl-64' : 'md:pl-20';
 
   return (
     <div className="min-h-screen bg-zinc-100 text-zinc-950">
@@ -71,9 +71,15 @@ export function Layout() {
           'fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col border-r border-zinc-200 bg-white p-4 transition-all duration-200 md:translate-x-0',
           menuAberto ? 'translate-x-0 shadow-xl' : '',
           larguraDesktop,
+          menuExpandido ? 'md:p-4' : 'md:p-3',
         ].join(' ')}
       >
-        <div className="flex items-center gap-2">
+        <div
+          className={[
+            'flex items-center gap-2',
+            menuExpandido ? '' : 'md:justify-center md:gap-0',
+          ].join(' ')}
+        >
           <button
             aria-label={menuExpandido ? 'Recolher menu lateral' : 'Expandir menu lateral'}
             className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-700 transition hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-200 md:flex"
@@ -127,16 +133,6 @@ export function Layout() {
           >
             IPE CRM
           </NavLink>
-          {!menuExpandido ? (
-            <NavLink
-              aria-label="IPE CRM"
-              className="hidden text-lg font-semibold text-emerald-800 md:block"
-              title="IPE CRM"
-              to="/"
-            >
-              IPE CRM
-            </NavLink>
-          ) : null}
         </div>
 
         <nav className="mt-8 flex flex-1 flex-col gap-1">
