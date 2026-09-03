@@ -1,17 +1,18 @@
 import { PERFIS } from '@ipe_crm/shared';
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { IconeAcao } from '@/components/IconeAcao';
 import type { CriarManutencaoVeiculoDto, ManutencaoVeiculo } from '@/services/manutencoes.service';
 import { useAutenticacaoStore } from '@/store/autenticacao.store';
 import { ManutencaoFormModal } from './ManutencaoFormModal';
 import {
   useAtualizarManutencao,
-  useCriarManutencao,
   useManutencoes,
   useRemoverManutencao,
 } from './hooks/useManutencoes';
 
 export function ManutencoesPage() {
+  const navigate = useNavigate();
   const usuario = useAutenticacaoStore((state) => state.usuario);
   const [placa, setPlaca] = useState('');
   const [dataInicio, setDataInicio] = useState('');
@@ -35,7 +36,6 @@ export function ManutencoesPage() {
   );
 
   const { data, isLoading } = useManutencoes(filtros);
-  const criar = useCriarManutencao();
   const atualizar = useAtualizarManutencao();
   const remover = useRemoverManutencao();
 
@@ -43,8 +43,7 @@ export function ManutencoesPage() {
     data?.total_paginas ?? Math.max(Math.ceil((data?.total ?? 0) / (data?.limite ?? 10)), 1);
 
   function abrirNova() {
-    setSelecionada(null);
-    setModalAberto(true);
+    navigate('/manutencoes/nova');
   }
 
   function editar(manutencao: ManutencaoVeiculo) {
@@ -58,10 +57,9 @@ export function ManutencoesPage() {
   }
 
   function salvar(dto: CriarManutencaoVeiculoDto) {
-    const mutacao = selecionada
-      ? atualizar.mutateAsync({ id: selecionada.id, dto })
-      : criar.mutateAsync(dto);
-    return mutacao.then(fecharModal);
+    if (!selecionada) return;
+
+    return atualizar.mutateAsync({ id: selecionada.id, dto }).then(fecharModal);
   }
 
   function excluir(manutencao: ManutencaoVeiculo) {
@@ -257,9 +255,9 @@ export function ManutencoesPage() {
 
       <ManutencaoFormModal
         aberto={modalAberto}
-        erro={criar.error ?? atualizar.error}
+        erro={atualizar.error}
         manutencao={selecionada}
-        salvando={criar.isPending || atualizar.isPending}
+        salvando={atualizar.isPending}
         onFechar={fecharModal}
         onSalvar={salvar}
       />

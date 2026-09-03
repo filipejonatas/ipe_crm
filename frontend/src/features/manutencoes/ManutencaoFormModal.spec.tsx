@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useItensEstoque } from '@/features/estoque/hooks/useItensEstoque';
 import { ManutencaoFormModal } from './ManutencaoFormModal';
 
 vi.mock('@/features/estoque/hooks/useItensEstoque', () => ({
@@ -10,7 +11,13 @@ vi.mock('@/features/veiculos/hooks/useVeiculos', () => ({
   useVeiculos: vi.fn(() => ({ data: { dados: [] } })),
 }));
 
+const useItensEstoqueMock = vi.mocked(useItensEstoque);
+
 describe('ManutencaoFormModal', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('aceita somente números e limita a quilometragem a 8 dígitos', async () => {
     render(<ManutencaoFormModal aberto onFechar={vi.fn()} onSalvar={vi.fn()} />);
 
@@ -73,5 +80,23 @@ describe('ManutencaoFormModal', () => {
     expect(totalPecas.compareDocumentPosition(totalGeral)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(screen.getByText('R$ 20,00')).toBeInTheDocument();
     expect(screen.getByText('R$ 25,00')).toBeInTheDocument();
+  });
+
+  it('busca itens de estoque com limite aceito pelo backend', async () => {
+    render(<ManutencaoFormModal aberto onFechar={vi.fn()} onSalvar={vi.fn()} />);
+
+    expect(useItensEstoqueMock).toHaveBeenLastCalledWith({
+      ativo: true,
+      busca: undefined,
+      limite: 10,
+    });
+
+    await userEvent.type(screen.getByLabelText(/buscar peca no estoque/i), 'filtro');
+
+    expect(useItensEstoqueMock).toHaveBeenLastCalledWith({
+      ativo: true,
+      busca: 'filtro',
+      limite: 10,
+    });
   });
 });

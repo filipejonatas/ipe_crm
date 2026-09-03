@@ -30,6 +30,7 @@ interface PecaFormValues {
 interface Props {
   aberto: boolean;
   manutencao?: ManutencaoVeiculo | null;
+  variante?: 'modal' | 'pagina';
   salvando?: boolean;
   erro?: unknown;
   onFechar: () => void;
@@ -48,15 +49,21 @@ const pecaVazia: PecaFormValues = {
 export function ManutencaoFormModal({
   aberto,
   manutencao,
+  variante = 'modal',
   salvando,
   erro,
   onFechar,
   onSalvar,
 }: Props) {
   const [pecas, setPecas] = useState<PecaFormValues[]>([]);
+  const [buscaItemEstoque, setBuscaItemEstoque] = useState('');
   const [erroLocal, setErroLocal] = useState('');
   const { data: veiculos } = useVeiculos({ ativo: true, limite: 100 });
-  const { data: itens } = useItensEstoque({ ativo: true, limite: 100 });
+  const {
+    data: itens,
+    isError: erroItensEstoque,
+    isLoading: carregandoItensEstoque,
+  } = useItensEstoque({ ativo: true, busca: buscaItemEstoque || undefined, limite: 10 });
   const editando = Boolean(manutencao);
   const {
     register,
@@ -97,6 +104,7 @@ export function ManutencaoFormModal({
           },
     );
     setPecas([]);
+    setBuscaItemEstoque('');
     setErroLocal('');
   }, [aberto, manutencao, reset]);
 
@@ -111,8 +119,9 @@ export function ManutencaoFormModal({
   );
   const custoMaoObra = Number(watch('custo_mao_obra') || 0);
   const totalManutencao = totalPecas + custoMaoObra;
+  const pagina = variante === 'pagina';
 
-  if (!aberto) return null;
+  if (!aberto && !pagina) return null;
 
   function atualizarPeca(indice: number, campo: keyof PecaFormValues, valor: string) {
     setPecas((atuais) =>
@@ -141,7 +150,7 @@ export function ManutencaoFormModal({
     setErroLocal('');
 
     const custoMaoObra = Number(valores.custo_mao_obra || 0);
-    const quilometragem = valores.quilometragem === '' ? null : Number(valores.quilometragem);
+    const quilometragem = valores.quilometragem === '' ? undefined : Number(valores.quilometragem);
     const pecasDto: PecaManutencaoDto[] = [];
 
     for (const peca of pecas) {
@@ -198,13 +207,25 @@ export function ManutencaoFormModal({
       : '';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4">
-      <div className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-md bg-white p-6 shadow-xl">
+    <div
+      className={
+        pagina
+          ? 'w-full'
+          : 'fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4'
+      }
+    >
+      <div
+        className={
+          pagina
+            ? 'w-full rounded-md border border-zinc-200 bg-white p-6'
+            : 'max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-md bg-white p-6 shadow-xl'
+        }
+      >
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-zinc-950">
             {editando ? 'Editar manutenção' : 'Nova manutenção'}
           </h2>
-          <BotaoFecharModal onClick={onFechar} />
+          {!pagina && <BotaoFecharModal onClick={onFechar} />}
         </div>
 
         <form className="mt-5 space-y-5" onSubmit={handleSubmit(salvar)}>
@@ -289,6 +310,26 @@ export function ManutencaoFormModal({
                   Adicionar peça
                 </button>
               </div>
+
+              <input
+                aria-label="Buscar peca no estoque"
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                placeholder="Buscar peca por codigo, descricao ou marca"
+                value={buscaItemEstoque}
+                onChange={(event) => setBuscaItemEstoque(event.target.value)}
+              />
+
+              {carregandoItensEstoque && (
+                <p className="rounded-md bg-zinc-50 px-3 py-2 text-sm text-zinc-500">
+                  Carregando pecas do estoque...
+                </p>
+              )}
+
+              {erroItensEstoque && (
+                <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+                  Nao foi possivel carregar as pecas do estoque.
+                </p>
+              )}
 
               {pecas.length === 0 && (
                 <p className="rounded-md bg-zinc-50 px-3 py-3 text-sm text-zinc-500">

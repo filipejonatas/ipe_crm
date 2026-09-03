@@ -1,5 +1,7 @@
 import { PERFIS } from '@ipe_crm/shared';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { useAutenticacaoStore } from '@/store/autenticacao.store';
 import { ManutencoesPage } from './ManutencoesPage';
 
@@ -40,6 +42,17 @@ vi.mock('./hooks/useManutencoes', () => ({
 }));
 
 describe('ManutencoesPage', () => {
+  function renderizar() {
+    return render(
+      <MemoryRouter initialEntries={['/manutencoes']}>
+        <Routes>
+          <Route path="/manutencoes" element={<ManutencoesPage />} />
+          <Route path="/manutencoes/nova" element={<h1>Nova manutencao page</h1>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+  }
+
   beforeEach(() => {
     useAutenticacaoStore.setState({
       autenticado: true,
@@ -54,7 +67,7 @@ describe('ManutencoesPage', () => {
   });
 
   it('exibe ações por ícones acessíveis e centralizados', () => {
-    render(<ManutencoesPage />);
+    renderizar();
 
     const editar = screen.getByRole('button', { name: /editar manutenção/i });
     const excluir = screen.getByRole('button', { name: /excluir manutenção/i });
@@ -64,5 +77,12 @@ describe('ManutencoesPage', () => {
     expect(excluir).toContainElement(excluir.querySelector('svg'));
     expect(cabecalhoAcoes).toHaveClass('text-center');
     expect(editar.parentElement).toHaveClass('justify-center', 'flex-nowrap');
+  });
+  it('direciona para a pagina de nova manutencao', async () => {
+    renderizar();
+
+    await userEvent.click(screen.getByRole('button', { name: /nova manuten/i }));
+
+    expect(screen.getByRole('heading', { name: /nova manutencao page/i })).toBeInTheDocument();
   });
 });
