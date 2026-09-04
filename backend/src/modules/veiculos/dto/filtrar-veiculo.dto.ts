@@ -1,5 +1,5 @@
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 function transformarBooleano(value: unknown): boolean | undefined {
   if (value === true || value === 'true') return true;
@@ -16,6 +16,17 @@ export class FiltrarVeiculoDto {
   @Transform(({ value }: { value: unknown }) => transformarBooleano(value))
   @IsBoolean()
   ativo?: boolean;
+
+  @IsOptional()
+  @IsIn(['placa', 'modelo', 'marca'])
+  ordenar_por?: 'placa' | 'modelo' | 'marca';
+
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.toUpperCase() : value,
+  )
+  @IsIn(['ASC', 'DESC'])
+  direcao?: 'ASC' | 'DESC';
 
   @IsOptional()
   @Type(() => Number)

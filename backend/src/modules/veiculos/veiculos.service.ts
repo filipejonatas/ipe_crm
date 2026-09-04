@@ -49,8 +49,17 @@ export class VeiculosService {
       query.andWhere('veiculo.ativo = :ativo', { ativo: filtros.ativo });
     }
 
+    const camposOrdenacao = {
+      placa: 'veiculo.placa',
+      modelo: 'veiculo.modelo',
+      marca: 'veiculo.marca',
+    } as const;
+    const campoOrdenacao = filtros.ordenar_por ?? 'modelo';
+    const direcaoOrdenacao = filtros.direcao ?? 'ASC';
+
     const [veiculos, total] = await query
-      .orderBy('veiculo.criado_em', 'DESC')
+      .orderBy(camposOrdenacao[campoOrdenacao], direcaoOrdenacao)
+      .addOrderBy('veiculo.placa', 'ASC')
       .skip((pagina - 1) * limite)
       .take(limite)
       .getManyAndCount();

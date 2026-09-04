@@ -7,6 +7,18 @@ type MockRepository = jest.Mocked<Pick<Repository<Veiculo>, 'create' | 'save' | 
   createQueryBuilder: jest.Mock;
 };
 
+function criarQueryBuilder() {
+  return {
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    addOrderBy: jest.fn().mockReturnThis(),
+    skip: jest.fn().mockReturnThis(),
+    take: jest.fn().mockReturnThis(),
+    getManyAndCount: jest.fn().mockResolvedValue([[criarVeiculo()], 1]),
+  };
+}
+
 function criarVeiculo(sobrescritas: Partial<Veiculo> = {}): Veiculo {
   return {
     id: 'veiculo-1',
@@ -55,6 +67,16 @@ describe('VeiculosService', () => {
     await expect(
       service.criar({ placa: 'ABC1234', modelo: 'Cargo', marca: 'Ford' }),
     ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('listar ordena alfabeticamente pelo campo informado', async () => {
+    const queryBuilder = criarQueryBuilder();
+    repository.createQueryBuilder.mockReturnValue(queryBuilder);
+
+    await service.listar({ ordenar_por: 'marca', direcao: 'ASC' });
+
+    expect(queryBuilder.orderBy).toHaveBeenCalledWith('veiculo.marca', 'ASC');
+    expect(queryBuilder.addOrderBy).toHaveBeenCalledWith('veiculo.placa', 'ASC');
   });
 
   it('buscarPorId lanca NotFoundException para id inexistente ou excluido', async () => {
