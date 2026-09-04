@@ -8,6 +8,7 @@ import { LIMITES_VEICULO, VeiculoFormValues, veiculoFormSchema } from './veiculo
 interface Props {
   aberto: boolean;
   veiculo?: Veiculo | null;
+  erroSalvar?: string;
   salvando?: boolean;
   onFechar: () => void;
   onSalvar: (valores: VeiculoFormValues) => void;
@@ -29,7 +30,14 @@ function normalizarPlaca(valor: string) {
     .slice(0, LIMITES_VEICULO.placa);
 }
 
-export function VeiculoFormModal({ aberto, veiculo, salvando, onFechar, onSalvar }: Props) {
+export function VeiculoFormModal({
+  aberto,
+  veiculo,
+  erroSalvar,
+  salvando,
+  onFechar,
+  onSalvar,
+}: Props) {
   const {
     register,
     handleSubmit,
@@ -67,6 +75,15 @@ export function VeiculoFormModal({ aberto, veiculo, salvando, onFechar, onSalvar
           </h2>
           <BotaoFecharModal onClick={onFechar} />
         </div>
+
+        {erroSalvar && (
+          <div
+            className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800"
+            role="alert"
+          >
+            {erroSalvar}
+          </div>
+        )}
 
         <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit(onSalvar)}>
           <label>

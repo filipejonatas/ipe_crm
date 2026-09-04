@@ -16,6 +16,8 @@ export interface Veiculo {
 export interface FiltrosVeiculos {
   busca?: string;
   ativo?: boolean;
+  ordenar_por?: 'placa' | 'modelo' | 'marca';
+  direcao?: 'ASC' | 'DESC';
   pagina?: number;
   limite?: number;
 }

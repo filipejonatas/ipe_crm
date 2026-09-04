@@ -1,8 +1,9 @@
 import { PERFIS } from '@ipe_crm/shared';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useAutenticacaoStore } from '@/store/autenticacao.store';
 import { VeiculosPage } from './VeiculosPage';
+import { useCriarVeiculo, useVeiculos } from './hooks/useVeiculos';
 
 vi.mock('./hooks/useVeiculos', () => ({
   useVeiculos: vi.fn(() => ({
@@ -33,6 +34,11 @@ vi.mock('./hooks/useVeiculos', () => ({
 
 describe('VeiculosPage', () => {
   beforeEach(() => {
+    vi.mocked(useCriarVeiculo).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof useCriarVeiculo>);
+
     useAutenticacaoStore.setState({
       autenticado: true,
       token: 'token-teste',
@@ -45,7 +51,7 @@ describe('VeiculosPage', () => {
     });
   });
 
-  it('renderiza a tabela de veículos com ano separado do modelo', () => {
+  it('renderiza a tabela de veiculos com ano separado do modelo', () => {
     render(<VeiculosPage />);
 
     expect(screen.getByText('ABC1234')).toBeInTheDocument();
@@ -55,26 +61,94 @@ describe('VeiculosPage', () => {
   });
 
   it('exibe mensagem quando lista esta vazia', async () => {
-    const hooks = await import('./hooks/useVeiculos');
-    vi.mocked(hooks.useVeiculos).mockReturnValueOnce({
+    vi.mocked(useVeiculos).mockReturnValueOnce({
       data: { dados: [], total: 0, pagina: 1, limite: 10 },
       isLoading: false,
-    } as unknown as ReturnType<typeof hooks.useVeiculos>);
+    } as unknown as ReturnType<typeof useVeiculos>);
 
     render(<VeiculosPage />);
 
-    expect(screen.getByText(/nenhum veículo encontrado/i)).toBeInTheDocument();
+    expect(screen.getByText(/nenhum ve.culo encontrado/i)).toBeInTheDocument();
   });
 
-  it('abre modal ao clicar em Novo veículo', async () => {
+  it('abre modal ao clicar em novo veiculo', async () => {
     render(<VeiculosPage />);
 
-    await userEvent.click(screen.getByRole('button', { name: /novo veículo/i }));
+    await userEvent.click(screen.getByRole('button', { name: /novo ve.culo/i }));
 
-    expect(screen.getByRole('heading', { name: /novo veículo/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /novo ve.culo/i })).toBeInTheDocument();
   });
 
-  it('oculta ações de escrita para perfil oficina', () => {
+  it('lista veiculos em ordem alfabetica pelo campo selecionado', async () => {
+    render(<VeiculosPage />);
+
+    expect(useVeiculos).toHaveBeenCalledWith(
+      expect.objectContaining({ ordenar_por: 'modelo', direcao: 'ASC' }),
+    );
+
+    await userEvent.selectOptions(screen.getByLabelText(/ordenar por/i), 'marca');
+
+    expect(useVeiculos).toHaveBeenLastCalledWith(
+      expect.objectContaining({ ordenar_por: 'marca', direcao: 'ASC' }),
+    );
+  });
+
+  it('confirma quando um veiculo e cadastrado', async () => {
+    vi.mocked(useCriarVeiculo).mockReturnValue({
+      mutateAsync: vi.fn().mockResolvedValue({
+        id: 'veiculo-2',
+        placa: 'DEF5678',
+        modelo: 'Sprinter',
+        marca: 'Mercedes',
+        ano: null,
+        observacoes: null,
+        ativo: true,
+        criado_em: '2026-01-01T00:00:00.000Z',
+        atualizado_em: '2026-01-01T00:00:00.000Z',
+      }),
+      isPending: false,
+    } as unknown as ReturnType<typeof useCriarVeiculo>);
+
+    render(<VeiculosPage />);
+
+    await userEvent.click(screen.getByRole('button', { name: /novo ve.culo/i }));
+    await userEvent.type(screen.getByLabelText(/^placa$/i), 'def5678');
+    await userEvent.type(screen.getByLabelText(/^modelo$/i), 'Sprinter');
+    await userEvent.type(screen.getByLabelText(/^marca$/i), 'Mercedes');
+    await userEvent.click(screen.getByRole('button', { name: /^salvar$/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('status')).toHaveTextContent(
+        'Veículo DEF5678 cadastrado com sucesso.',
+      );
+    });
+  });
+
+  it('avisa quando a placa do veiculo ja existe', async () => {
+    vi.mocked(useCriarVeiculo).mockReturnValue({
+      mutateAsync: vi.fn().mockRejectedValue({
+        isAxiosError: true,
+        response: { status: 409, data: { message: 'Placa ja cadastrada' } },
+      }),
+      isPending: false,
+    } as unknown as ReturnType<typeof useCriarVeiculo>);
+
+    render(<VeiculosPage />);
+
+    await userEvent.click(screen.getByRole('button', { name: /novo ve.culo/i }));
+    await userEvent.type(screen.getByLabelText(/^placa$/i), 'abc1234');
+    await userEvent.type(screen.getByLabelText(/^modelo$/i), 'Cargo');
+    await userEvent.type(screen.getByLabelText(/^marca$/i), 'Ford');
+    await userEvent.click(screen.getByRole('button', { name: /^salvar$/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Veículo já cadastrado. Confira a placa informada.',
+      );
+    });
+  });
+
+  it('oculta acoes de escrita para perfil oficina', () => {
     useAutenticacaoStore.setState({
       usuario: {
         id: 'usuario-2',
@@ -86,7 +160,7 @@ describe('VeiculosPage', () => {
 
     render(<VeiculosPage />);
 
-    expect(screen.queryByRole('button', { name: /novo veículo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /novo ve.culo/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /editar/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /excluir/i })).not.toBeInTheDocument();
   });

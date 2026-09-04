@@ -1,4 +1,5 @@
 import { PERFIS } from '@ipe_crm/shared';
+import { isAxiosError } from 'axios';
 import { useMemo, useState } from 'react';
 import { IconeAcao } from '@/components/IconeAcao';
 import type { CriarVeiculoDto, Veiculo } from '@/services/veiculos.service';
@@ -12,10 +13,32 @@ import {
   useVeiculos,
 } from './hooks/useVeiculos';
 
+type CampoOrdenacaoVeiculo = 'placa' | 'modelo' | 'marca';
+
+type MensagemFeedback = {
+  tipo: 'sucesso' | 'erro';
+  texto: string;
+};
+
 function limparVazios<T extends Record<string, unknown>>(valores: T) {
   return Object.fromEntries(
     Object.entries(valores).map(([chave, valor]) => [chave, valor === '' ? null : valor]),
   ) as T;
+}
+
+function mensagemErroSalvar(erro: unknown) {
+  if (isAxiosError<{ message?: unknown }>(erro)) {
+    if (erro.response?.status === 409) {
+      return 'Veículo já cadastrado. Confira a placa informada.';
+    }
+
+    const mensagem = erro.response?.data?.message;
+    if (typeof mensagem === 'string') {
+      return mensagem;
+    }
+  }
+
+  return 'Não foi possível salvar o veículo. Tente novamente.';
 }
 
 export function VeiculosPage() {
@@ -23,16 +46,20 @@ export function VeiculosPage() {
   const [busca, setBusca] = useState('');
   const [ativo, setAtivo] = useState<string>('');
   const [pagina, setPagina] = useState(1);
+  const [ordenarPor, setOrdenarPor] = useState<CampoOrdenacaoVeiculo>('modelo');
   const [modalAberto, setModalAberto] = useState(false);
   const [selecionado, setSelecionado] = useState<Veiculo | null>(null);
+  const [mensagem, setMensagem] = useState<MensagemFeedback | null>(null);
   const filtros = useMemo(
     () => ({
       busca: busca || undefined,
       ativo: ativo === '' ? undefined : ativo === 'true',
+      ordenar_por: ordenarPor,
+      direcao: 'ASC' as const,
       pagina,
       limite: 10,
     }),
-    [ativo, busca, pagina],
+    [ativo, busca, ordenarPor, pagina],
   );
   const { data, isLoading } = useVeiculos(filtros);
   const criar = useCriarVeiculo();
@@ -42,15 +69,30 @@ export function VeiculosPage() {
 
   function abrirNovo() {
     setSelecionado(null);
+    setMensagem(null);
     setModalAberto(true);
   }
 
   function salvar(valores: VeiculoFormValues) {
     const dto = limparVazios(valores) as CriarVeiculoDto;
+    const editando = Boolean(selecionado);
     const mutacao = selecionado
       ? atualizar.mutateAsync({ id: selecionado.id, dto })
       : criar.mutateAsync(dto);
-    void mutacao.then(() => setModalAberto(false));
+    setMensagem(null);
+    void mutacao
+      .then((veiculo) => {
+        setMensagem({
+          tipo: 'sucesso',
+          texto: editando
+            ? `Veículo ${veiculo.placa} atualizado com sucesso.`
+            : `Veículo ${veiculo.placa} cadastrado com sucesso.`,
+        });
+        setModalAberto(false);
+      })
+      .catch((erro: unknown) => {
+        setMensagem({ tipo: 'erro', texto: mensagemErroSalvar(erro) });
+      });
   }
 
   function excluir(veiculo: Veiculo) {
@@ -79,7 +121,16 @@ export function VeiculosPage() {
         )}
       </div>
 
-      <div className="flex flex-col gap-3 rounded-md border border-zinc-200 bg-white p-4 sm:flex-row">
+      {mensagem?.tipo === 'sucesso' && (
+        <div
+          className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800"
+          role="status"
+        >
+          {mensagem.texto}
+        </div>
+      )}
+
+      <div className="grid gap-3 rounded-md border border-zinc-200 bg-white p-4 md:grid-cols-[1fr_180px_200px]">
         <input
           aria-label="Buscar veículos"
           className="w-full rounded-md border border-zinc-300 px-3 py-2"
@@ -102,6 +153,19 @@ export function VeiculosPage() {
           <option value="">Todos</option>
           <option value="true">Ativos</option>
           <option value="false">Inativos</option>
+        </select>
+        <select
+          aria-label="Ordenar por"
+          className="rounded-md border border-zinc-300 px-3 py-2"
+          value={ordenarPor}
+          onChange={(event) => {
+            setPagina(1);
+            setOrdenarPor(event.target.value as CampoOrdenacaoVeiculo);
+          }}
+        >
+          <option value="modelo">Modelo (A-Z)</option>
+          <option value="marca">Marca (A-Z)</option>
+          <option value="placa">Placa (A-Z)</option>
         </select>
       </div>
 
@@ -211,6 +275,7 @@ export function VeiculosPage() {
       <VeiculoFormModal
         aberto={modalAberto}
         veiculo={selecionado}
+        erroSalvar={mensagem?.tipo === 'erro' ? mensagem.texto : undefined}
         salvando={criar.isPending || atualizar.isPending}
         onFechar={() => setModalAberto(false)}
         onSalvar={salvar}
