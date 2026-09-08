@@ -125,6 +125,17 @@ describe('ItensEstoqueService', () => {
     });
   });
 
+  it('listar busca sem diferenciar acentos ou maiusculas', async () => {
+    const qb = criarQueryBuilder();
+    repository.createQueryBuilder.mockReturnValue(qb);
+
+    await service.listar({ busca: ' Abraçadeira ' });
+
+    expect(qb.andWhere).toHaveBeenCalledWith(expect.stringContaining('translate('), {
+      busca: '%abracadeira%',
+    });
+  });
+
   it('listar filtra por baixo estoque', async () => {
     const qb = criarQueryBuilder();
     repository.createQueryBuilder.mockReturnValue(qb);

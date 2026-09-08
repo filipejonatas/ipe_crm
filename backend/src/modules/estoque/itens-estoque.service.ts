@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { RespostaPaginada } from '@ipe_crm/shared';
-import { Brackets, In, IsNull, Not, QueryFailedError, Repository } from 'typeorm';
+import { In, IsNull, Not, QueryFailedError, Repository } from 'typeorm';
 import { AcaoAuditoria } from '../auditoria/log-auditoria.entity';
 import { AuditoriaService } from '../auditoria/auditoria.service';
 import type { UsuarioAuditoria } from '../fornecedores/fornecedores.service';
@@ -96,14 +96,15 @@ export class ItensEstoqueService {
     const limite = Math.min(Math.max(Number(filtros.limite) || 10, 1), 100);
     const query = this.itensRepository.createQueryBuilder('item').where('item.excluido_em IS NULL');
 
-    if (filtros.busca) {
-      query.andWhere(
-        new Brackets((qb) => {
-          qb.where('item.codigo ILIKE :busca', { busca: `%${filtros.busca}%` })
-            .orWhere('item.descricao ILIKE :busca', { busca: `%${filtros.busca}%` })
-            .orWhere('item.marca ILIKE :busca', { busca: `%${filtros.busca}%` });
-        }),
-      );
+    if (filtros.busca?.trim()) {
+      const busca = normalizarBusca(filtros.busca);
+      const camposBusca = `translate(
+        lower(concat_ws(' ', item.codigo, item.descricao, item.marca)),
+        'áàâãäéèêëíìîïóòôõöúùûüç',
+        'aaaaaeeeeiiiiooooouuuuc'
+      )`;
+
+      query.andWhere(`${camposBusca} LIKE :busca`, { busca: `%${busca}%` });
     }
 
     if (filtros.categoria) query.andWhere('item.categoria = :categoria', filtros);
@@ -291,4 +292,12 @@ export class ItensEstoqueService {
       atualizado_em: item.atualizado_em,
     };
   }
+}
+
+function normalizarBusca(valor: string) {
+  return valor
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
 }

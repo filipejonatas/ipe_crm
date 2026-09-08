@@ -209,10 +209,10 @@ export function ManutencoesPage() {
                 <td className="px-4 py-3 align-middle text-sm">
                   <div className="flex flex-nowrap items-center justify-center gap-2">
                     <button
-                      aria-label="Visualizar manutenÃ§Ã£o"
+                      aria-label="Visualizar manutenção"
                       className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-200 text-zinc-700 transition hover:bg-zinc-50"
                       onClick={() => setVisualizada(manutencao)}
-                      title="Visualizar manutenÃ§Ã£o"
+                      title="Visualizar manutenção"
                       type="button"
                     >
                       <IconeAcao tipo="historico" />
@@ -305,11 +305,11 @@ function DetalhesManutencaoModal({
       <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-md bg-white p-6 shadow-xl">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-950">ManutenÃ§Ã£o {manutencao.placa}</h2>
+            <h2 className="text-lg font-semibold text-zinc-950">Manutenção {manutencao.placa}</h2>
             <p className="text-sm text-zinc-500">{formatarData(manutencao.data_manutencao)}</p>
           </div>
           <button
-            aria-label="Fechar detalhes da manutenÃ§Ã£o"
+            aria-label="Fechar detalhes da manutenção"
             className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium"
             onClick={onFechar}
             type="button"
@@ -328,7 +328,7 @@ function DetalhesManutencaoModal({
             </p>
           </div>
           <div>
-            <span className="text-xs font-semibold uppercase text-zinc-500">MÃ£o de obra</span>
+            <span className="text-xs font-semibold uppercase text-zinc-500">Mão de obra</span>
             <p className="mt-1 text-sm text-zinc-900">{formatarMoeda(manutencao.custo_mao_obra)}</p>
           </div>
           <div>
@@ -340,20 +340,20 @@ function DetalhesManutencaoModal({
         </div>
 
         <div className="mt-5 space-y-2">
-          <h3 className="text-sm font-semibold uppercase text-zinc-500">ManutenÃ§Ã£o feita</h3>
+          <h3 className="text-sm font-semibold uppercase text-zinc-500">Manutenção feita</h3>
           <p className="whitespace-pre-wrap rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-800">
             {manutencao.descricao}
           </p>
         </div>
 
         <div className="mt-5 space-y-2">
-          <h3 className="text-sm font-semibold uppercase text-zinc-500">PeÃ§as utilizadas</h3>
+          <h3 className="text-sm font-semibold uppercase text-zinc-500">Peças utilizadas</h3>
           {manutencao.pecas.length > 0 ? (
             <div className="overflow-x-auto rounded-md border border-zinc-200">
               <table className="min-w-full divide-y divide-zinc-200">
                 <thead className="bg-zinc-50">
                   <tr>
-                    {['PeÃ§a', 'Qtd.', 'UnitÃ¡rio', 'Total'].map((coluna) => (
+                    {['Peça', 'Qtd.', 'Unitário', 'Total'].map((coluna) => (
                       <th
                         className="px-3 py-2 text-left text-xs font-semibold uppercase text-zinc-500"
                         key={coluna}
@@ -381,14 +381,14 @@ function DetalhesManutencaoModal({
             </div>
           ) : (
             <p className="rounded-md bg-zinc-50 px-3 py-3 text-sm text-zinc-500">
-              Nenhuma peÃ§a vinculada.
+              Nenhuma peça vinculada.
             </p>
           )}
         </div>
 
         {manutencao.observacoes && (
           <div className="mt-5 space-y-2">
-            <h3 className="text-sm font-semibold uppercase text-zinc-500">ObservaÃ§Ãµes</h3>
+            <h3 className="text-sm font-semibold uppercase text-zinc-500">Observações</h3>
             <p className="whitespace-pre-wrap rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-800">
               {manutencao.observacoes}
             </p>
