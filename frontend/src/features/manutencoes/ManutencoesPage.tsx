@@ -20,6 +20,7 @@ export function ManutencoesPage() {
   const [pagina, setPagina] = useState(1);
   const [modalAberto, setModalAberto] = useState(false);
   const [selecionada, setSelecionada] = useState<ManutencaoVeiculo | null>(null);
+  const [visualizada, setVisualizada] = useState<ManutencaoVeiculo | null>(null);
   const podeGerenciar = Boolean(
     usuario?.perfil && [PERFIS.ADMIN, PERFIS.OFICINA].includes(usuario.perfil),
   );
@@ -165,7 +166,13 @@ export function ManutencoesPage() {
                   {formatarData(manutencao.data_manutencao)}
                 </td>
                 <td className="px-4 py-3 align-middle text-sm font-medium text-zinc-900">
-                  {manutencao.placa}
+                  <button
+                    className="font-semibold text-emerald-700 underline-offset-2 hover:underline"
+                    onClick={() => setVisualizada(manutencao)}
+                    type="button"
+                  >
+                    {manutencao.placa}
+                  </button>
                 </td>
                 <td className="max-w-sm px-4 py-3 align-middle text-sm text-zinc-700">
                   <p className="line-clamp-2">{manutencao.descricao}</p>
@@ -201,6 +208,15 @@ export function ManutencoesPage() {
                 </td>
                 <td className="px-4 py-3 align-middle text-sm">
                   <div className="flex flex-nowrap items-center justify-center gap-2">
+                    <button
+                      aria-label="Visualizar manutenÃ§Ã£o"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-200 text-zinc-700 transition hover:bg-zinc-50"
+                      onClick={() => setVisualizada(manutencao)}
+                      title="Visualizar manutenÃ§Ã£o"
+                      type="button"
+                    >
+                      <IconeAcao tipo="historico" />
+                    </button>
                     {podeGerenciar && (
                       <button
                         aria-label="Editar manutenção"
@@ -261,6 +277,10 @@ export function ManutencoesPage() {
         onFechar={fecharModal}
         onSalvar={salvar}
       />
+
+      {visualizada && (
+        <DetalhesManutencaoModal manutencao={visualizada} onFechar={() => setVisualizada(null)} />
+      )}
     </section>
   );
 }
@@ -271,4 +291,110 @@ function formatarData(data: string) {
 
 function formatarMoeda(valor: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+}
+
+function DetalhesManutencaoModal({
+  manutencao,
+  onFechar,
+}: {
+  manutencao: ManutencaoVeiculo;
+  onFechar: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4">
+      <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-md bg-white p-6 shadow-xl">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-zinc-950">ManutenÃ§Ã£o {manutencao.placa}</h2>
+            <p className="text-sm text-zinc-500">{formatarData(manutencao.data_manutencao)}</p>
+          </div>
+          <button
+            aria-label="Fechar detalhes da manutenÃ§Ã£o"
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium"
+            onClick={onFechar}
+            type="button"
+          >
+            Fechar
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <div>
+            <span className="text-xs font-semibold uppercase text-zinc-500">Quilometragem</span>
+            <p className="mt-1 text-sm text-zinc-900">
+              {manutencao.quilometragem !== null
+                ? `${manutencao.quilometragem.toLocaleString('pt-BR')} km`
+                : '-'}
+            </p>
+          </div>
+          <div>
+            <span className="text-xs font-semibold uppercase text-zinc-500">MÃ£o de obra</span>
+            <p className="mt-1 text-sm text-zinc-900">{formatarMoeda(manutencao.custo_mao_obra)}</p>
+          </div>
+          <div>
+            <span className="text-xs font-semibold uppercase text-zinc-500">Total</span>
+            <p className="mt-1 text-sm font-semibold text-emerald-800">
+              {formatarMoeda(manutencao.custo_total)}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-2">
+          <h3 className="text-sm font-semibold uppercase text-zinc-500">ManutenÃ§Ã£o feita</h3>
+          <p className="whitespace-pre-wrap rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-800">
+            {manutencao.descricao}
+          </p>
+        </div>
+
+        <div className="mt-5 space-y-2">
+          <h3 className="text-sm font-semibold uppercase text-zinc-500">PeÃ§as utilizadas</h3>
+          {manutencao.pecas.length > 0 ? (
+            <div className="overflow-x-auto rounded-md border border-zinc-200">
+              <table className="min-w-full divide-y divide-zinc-200">
+                <thead className="bg-zinc-50">
+                  <tr>
+                    {['PeÃ§a', 'Qtd.', 'UnitÃ¡rio', 'Total'].map((coluna) => (
+                      <th
+                        className="px-3 py-2 text-left text-xs font-semibold uppercase text-zinc-500"
+                        key={coluna}
+                      >
+                        {coluna}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-200">
+                  {manutencao.pecas.map((peca) => (
+                    <tr key={peca.id}>
+                      <td className="px-3 py-2 text-sm text-zinc-800">{peca.descricao_peca}</td>
+                      <td className="px-3 py-2 text-sm text-zinc-600">{peca.quantidade}</td>
+                      <td className="px-3 py-2 text-sm text-zinc-600">
+                        {formatarMoeda(peca.preco_unitario)}
+                      </td>
+                      <td className="px-3 py-2 text-sm font-medium text-zinc-900">
+                        {formatarMoeda(peca.valor_total)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="rounded-md bg-zinc-50 px-3 py-3 text-sm text-zinc-500">
+              Nenhuma peÃ§a vinculada.
+            </p>
+          )}
+        </div>
+
+        {manutencao.observacoes && (
+          <div className="mt-5 space-y-2">
+            <h3 className="text-sm font-semibold uppercase text-zinc-500">ObservaÃ§Ãµes</h3>
+            <p className="whitespace-pre-wrap rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-800">
+              {manutencao.observacoes}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }

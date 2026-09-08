@@ -85,4 +85,14 @@ describe('ManutencoesPage', () => {
 
     expect(screen.getByRole('heading', { name: /nova manutencao page/i })).toBeInTheDocument();
   });
+
+  it('abre os detalhes da manutencao ao clicar na placa', async () => {
+    renderizar();
+
+    await userEvent.click(screen.getByRole('button', { name: 'ABC1234' }));
+
+    expect(screen.getByRole('heading', { name: /ABC1234/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/troca/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: /fechar detalhes/i })).toBeInTheDocument();
+  });
 });

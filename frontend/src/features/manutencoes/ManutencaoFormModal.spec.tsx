@@ -82,21 +82,22 @@ describe('ManutencaoFormModal', () => {
     expect(screen.getByText('R$ 25,00')).toBeInTheDocument();
   });
 
-  it('busca itens de estoque com limite aceito pelo backend', async () => {
+  it('busca itens de estoque em formato autocomplete', async () => {
     render(<ManutencaoFormModal aberto onFechar={vi.fn()} onSalvar={vi.fn()} />);
 
     expect(useItensEstoqueMock).toHaveBeenLastCalledWith({
       ativo: true,
       busca: undefined,
-      limite: 10,
+      limite: 20,
     });
 
+    await userEvent.click(screen.getByRole('button', { name: /adicionar pe.a/i }));
     await userEvent.type(screen.getByLabelText(/buscar peca no estoque/i), 'filtro');
 
     expect(useItensEstoqueMock).toHaveBeenLastCalledWith({
       ativo: true,
       busca: 'filtro',
-      limite: 10,
+      limite: 20,
     });
   });
 });

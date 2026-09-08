@@ -10,6 +10,7 @@ import type {
   ManutencaoVeiculo,
   PecaManutencaoDto,
 } from '@/services/manutencoes.service';
+import type { ItemEstoque } from '@/services/estoque.service';
 
 interface ManutencaoFormValues {
   veiculo_id: string;
@@ -22,6 +23,7 @@ interface ManutencaoFormValues {
 
 interface PecaFormValues {
   item_estoque_id: string;
+  busca_item_estoque: string;
   descricao_peca: string;
   quantidade: number | '';
   preco_unitario: number | '';
@@ -41,6 +43,7 @@ const hoje = () => new Date().toISOString().slice(0, 10);
 
 const pecaVazia: PecaFormValues = {
   item_estoque_id: '',
+  busca_item_estoque: '',
   descricao_peca: '',
   quantidade: '',
   preco_unitario: '',
@@ -57,13 +60,14 @@ export function ManutencaoFormModal({
 }: Props) {
   const [pecas, setPecas] = useState<PecaFormValues[]>([]);
   const [buscaItemEstoque, setBuscaItemEstoque] = useState('');
+  const [indiceBuscaAberta, setIndiceBuscaAberta] = useState<number | null>(null);
   const [erroLocal, setErroLocal] = useState('');
   const { data: veiculos } = useVeiculos({ ativo: true, limite: 100 });
   const {
     data: itens,
     isError: erroItensEstoque,
     isLoading: carregandoItensEstoque,
-  } = useItensEstoque({ ativo: true, busca: buscaItemEstoque || undefined, limite: 10 });
+  } = useItensEstoque({ ativo: true, busca: buscaItemEstoque || undefined, limite: 20 });
   const editando = Boolean(manutencao);
   const {
     register,
@@ -127,6 +131,32 @@ export function ManutencaoFormModal({
     setPecas((atuais) =>
       atuais.map((peca, posicao) => (posicao === indice ? { ...peca, [campo]: valor } : peca)),
     );
+  }
+
+  function buscarItemEstoque(indice: number, valor: string) {
+    setIndiceBuscaAberta(indice);
+    setBuscaItemEstoque(valor);
+    setPecas((atuais) =>
+      atuais.map((peca, posicao) =>
+        posicao === indice ? { ...peca, item_estoque_id: '', busca_item_estoque: valor } : peca,
+      ),
+    );
+  }
+
+  function selecionarItemEstoque(indice: number, item: ItemEstoque) {
+    setPecas((atuais) =>
+      atuais.map((peca, posicao) =>
+        posicao === indice
+          ? {
+              ...peca,
+              item_estoque_id: item.id,
+              busca_item_estoque: formatarItemEstoque(item),
+              descricao_peca: item.descricao,
+            }
+          : peca,
+      ),
+    );
+    setIndiceBuscaAberta(null);
   }
 
   function normalizarQuantidade(valor: string) {
@@ -311,14 +341,6 @@ export function ManutencaoFormModal({
                 </button>
               </div>
 
-              <input
-                aria-label="Buscar peca no estoque"
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                placeholder="Buscar peca por codigo, descricao ou marca"
-                value={buscaItemEstoque}
-                onChange={(event) => setBuscaItemEstoque(event.target.value)}
-              />
-
               {carregandoItensEstoque && (
                 <p className="rounded-md bg-zinc-50 px-3 py-2 text-sm text-zinc-500">
                   Carregando pecas do estoque...
@@ -344,20 +366,73 @@ export function ManutencaoFormModal({
                 >
                   <label className="xl:col-span-4">
                     <span className="text-xs font-medium text-zinc-600">Item de estoque</span>
-                    <select
-                      className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
-                      value={peca.item_estoque_id}
-                      onChange={(event) =>
-                        atualizarPeca(indice, 'item_estoque_id', event.target.value)
-                      }
-                    >
-                      <option value="">Peça avulsa</option>
-                      {itens?.dados.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.descricao} ({item.saldo_atual} {item.unidade_medida})
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <input
+                        aria-label="Buscar peca no estoque"
+                        autoComplete="off"
+                        className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+                        placeholder="Codigo, descricao ou marca"
+                        value={peca.busca_item_estoque}
+                        onChange={(event) => buscarItemEstoque(indice, event.target.value)}
+                        onFocus={() => {
+                          setIndiceBuscaAberta(indice);
+                          setBuscaItemEstoque(peca.busca_item_estoque);
+                        }}
+                        onBlur={() => {
+                          window.setTimeout(() => setIndiceBuscaAberta(null), 120);
+                        }}
+                      />
+                      {indiceBuscaAberta === indice && (
+                        <div className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-zinc-200 bg-white shadow-lg">
+                          <button
+                            className="block w-full px-3 py-2 text-left text-sm text-zinc-600 hover:bg-zinc-50"
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                              setPecas((atuais) =>
+                                atuais.map((itemAtual, posicao) =>
+                                  posicao === indice
+                                    ? {
+                                        ...itemAtual,
+                                        item_estoque_id: '',
+                                        busca_item_estoque: '',
+                                      }
+                                    : itemAtual,
+                                ),
+                              );
+                              setIndiceBuscaAberta(null);
+                            }}
+                            type="button"
+                          >
+                            Peca avulsa
+                          </button>
+                          {itens?.dados.map((item) => (
+                            <button
+                              className="block w-full px-3 py-2 text-left text-sm hover:bg-emerald-50"
+                              key={item.id}
+                              onMouseDown={(event) => {
+                                event.preventDefault();
+                                selecionarItemEstoque(indice, item);
+                              }}
+                              type="button"
+                            >
+                              <span className="block font-medium text-zinc-900">
+                                {item.descricao}
+                              </span>
+                              <span className="block text-xs text-zinc-500">
+                                {item.codigo ? `${item.codigo} - ` : ''}
+                                {item.marca ? `${item.marca} - ` : ''}
+                                {item.saldo_atual} {item.unidade_medida}
+                              </span>
+                            </button>
+                          ))}
+                          {!carregandoItensEstoque && itens?.dados.length === 0 && (
+                            <div className="px-3 py-2 text-sm text-zinc-500">
+                              Nenhum item encontrado.
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </label>
                   <label className="xl:col-span-3">
                     <span className="text-xs font-medium text-zinc-600">Descrição da peça</span>
@@ -476,4 +551,10 @@ export function ManutencaoFormModal({
 
 function formatarMoeda(valor: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+}
+
+function formatarItemEstoque(item: ItemEstoque) {
+  const codigo = item.codigo ? `${item.codigo} - ` : '';
+  const marca = item.marca ? ` - ${item.marca}` : '';
+  return `${codigo}${item.descricao}${marca}`;
 }
