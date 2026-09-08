@@ -131,8 +131,9 @@ describe('ItensEstoqueService', () => {
 
     await service.listar({ busca: ' Abraçadeira ' });
 
-    expect(qb.andWhere).toHaveBeenCalledWith(expect.stringContaining('translate('), {
-      busca: '%abracadeira%',
+    expect(qb.andWhere).toHaveBeenCalledWith(expect.stringContaining('item.descricao ILIKE'), {
+      busca: '%Abraçadeira%',
+      buscaNormalizada: '%abracadeira%',
     });
   });
 

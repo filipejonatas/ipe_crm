@@ -97,14 +97,26 @@ export class ItensEstoqueService {
     const query = this.itensRepository.createQueryBuilder('item').where('item.excluido_em IS NULL');
 
     if (filtros.busca?.trim()) {
-      const busca = normalizarBusca(filtros.busca);
+      const termo = filtros.busca.trim();
+      const buscaNormalizada = normalizarBusca(termo);
       const camposBusca = `translate(
         lower(concat_ws(' ', item.codigo, item.descricao, item.marca)),
         'áàâãäéèêëíìîïóòôõöúùûüç',
         'aaaaaeeeeiiiiooooouuuuc'
       )`;
 
-      query.andWhere(`${camposBusca} LIKE :busca`, { busca: `%${busca}%` });
+      query.andWhere(
+        `(
+          item.codigo ILIKE :busca
+          OR item.descricao ILIKE :busca
+          OR item.marca ILIKE :busca
+          OR ${camposBusca} LIKE :buscaNormalizada
+        )`,
+        {
+          busca: `%${termo}%`,
+          buscaNormalizada: `%${buscaNormalizada}%`,
+        },
+      );
     }
 
     if (filtros.categoria) query.andWhere('item.categoria = :categoria', filtros);

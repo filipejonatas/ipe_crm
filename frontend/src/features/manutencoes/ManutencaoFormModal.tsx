@@ -511,7 +511,7 @@ function SeletorPecaModal({
 
   if (!aberto) return null;
 
-  const totalPaginas = data?.total_paginas ?? 1;
+  const totalPaginas = Math.max(data?.total_paginas ?? 1, 1);
 
   return (
     <div
