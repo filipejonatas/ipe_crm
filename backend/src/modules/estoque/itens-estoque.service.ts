@@ -110,6 +110,7 @@ export class ItensEstoqueService {
     if (filtros.categoria) query.andWhere('item.categoria = :categoria', filtros);
     if (filtros.ativo !== undefined) query.andWhere('item.ativo = :ativo', filtros);
     if (filtros.baixo_estoque) query.andWhere('item.saldo_atual <= item.estoque_minimo');
+    if (filtros.com_saldo) query.andWhere('item.saldo_atual > 0');
 
     const [itens, total] = await query
       .orderBy('item.descricao', 'ASC')

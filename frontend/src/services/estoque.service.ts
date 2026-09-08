@@ -44,6 +44,7 @@ export interface FiltrosItensEstoque {
   categoria?: CategoriaItemEstoque;
   ativo?: boolean;
   baixo_estoque?: boolean;
+  com_saldo?: boolean;
   pagina?: number;
   limite?: number;
 }

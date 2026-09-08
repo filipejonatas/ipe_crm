@@ -28,6 +28,11 @@ export class FiltrarItensEstoqueDto {
   baixo_estoque?: boolean;
 
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) => transformarBooleano(value))
+  @IsBoolean()
+  com_saldo?: boolean;
+
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)

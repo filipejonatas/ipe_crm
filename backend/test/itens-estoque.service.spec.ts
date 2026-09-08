@@ -145,6 +145,15 @@ describe('ItensEstoqueService', () => {
     expect(qb.andWhere).toHaveBeenCalledWith('item.saldo_atual <= item.estoque_minimo');
   });
 
+  it('listar pode retornar somente itens com saldo disponivel', async () => {
+    const qb = criarQueryBuilder();
+    repository.createQueryBuilder.mockReturnValue(qb);
+
+    await service.listar({ com_saldo: true });
+
+    expect(qb.andWhere).toHaveBeenCalledWith('item.saldo_atual > 0');
+  });
+
   it('buscarPorId lanca NotFoundException para item excluido', async () => {
     repository.findOne.mockResolvedValue(null);
 

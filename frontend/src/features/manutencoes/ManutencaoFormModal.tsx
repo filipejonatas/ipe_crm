@@ -10,7 +10,11 @@ import type {
   ManutencaoVeiculo,
   PecaManutencaoDto,
 } from '@/services/manutencoes.service';
-import type { ItemEstoque } from '@/services/estoque.service';
+import {
+  categoriasItemEstoque,
+  type CategoriaItemEstoque,
+  type ItemEstoque,
+} from '@/services/estoque.service';
 
 interface ManutencaoFormValues {
   veiculo_id: string;
@@ -59,15 +63,10 @@ export function ManutencaoFormModal({
   onSalvar,
 }: Props) {
   const [pecas, setPecas] = useState<PecaFormValues[]>([]);
-  const [buscaItemEstoque, setBuscaItemEstoque] = useState('');
-  const [indiceBuscaAberta, setIndiceBuscaAberta] = useState<number | null>(null);
+  const [seletorPecaAberto, setSeletorPecaAberto] = useState(false);
+  const [indicePecaEmEdicao, setIndicePecaEmEdicao] = useState<number | null>(null);
   const [erroLocal, setErroLocal] = useState('');
   const { data: veiculos } = useVeiculos({ ativo: true, limite: 100 });
-  const {
-    data: itens,
-    isError: erroItensEstoque,
-    isLoading: carregandoItensEstoque,
-  } = useItensEstoque({ ativo: true, busca: buscaItemEstoque || undefined, limite: 20 });
   const editando = Boolean(manutencao);
   const {
     register,
@@ -108,7 +107,8 @@ export function ManutencaoFormModal({
           },
     );
     setPecas([]);
-    setBuscaItemEstoque('');
+    setSeletorPecaAberto(false);
+    setIndicePecaEmEdicao(null);
     setErroLocal('');
   }, [aberto, manutencao, reset]);
 
@@ -133,43 +133,19 @@ export function ManutencaoFormModal({
     );
   }
 
-  function buscarItemEstoque(indice: number, valor: string) {
-    setIndiceBuscaAberta(indice);
-    setBuscaItemEstoque(valor);
-    setPecas((atuais) =>
-      atuais.map((peca, posicao) =>
-        posicao === indice ? { ...peca, item_estoque_id: '', busca_item_estoque: valor } : peca,
-      ),
-    );
+  function abrirSeletorPeca(indice: number | null = null) {
+    setIndicePecaEmEdicao(indice);
+    setSeletorPecaAberto(true);
   }
 
-  function selecionarItemEstoque(indice: number, item: ItemEstoque) {
+  function selecionarPeca(novaPeca: PecaFormValues) {
     setPecas((atuais) =>
-      atuais.map((peca, posicao) =>
-        posicao === indice
-          ? {
-              ...peca,
-              item_estoque_id: item.id,
-              busca_item_estoque: formatarItemEstoque(item),
-              descricao_peca: item.descricao,
-            }
-          : peca,
-      ),
+      indicePecaEmEdicao === null
+        ? [...atuais, novaPeca]
+        : atuais.map((peca, indice) => (indice === indicePecaEmEdicao ? novaPeca : peca)),
     );
-    setIndiceBuscaAberta(null);
-  }
-
-  function normalizarQuantidade(valor: string) {
-    const partes = valor
-      .replace(',', '.')
-      .replace(/[^\d.]/g, '')
-      .split('.');
-    const inteiro = partes.shift() ?? '';
-    const decimal = partes.join('').slice(0, 1);
-
-    return partes.length > 0 || valor.includes('.') || valor.includes(',')
-      ? `${inteiro}.${decimal}`
-      : inteiro;
+    setSeletorPecaAberto(false);
+    setIndicePecaEmEdicao(null);
   }
 
   function removerPeca(indice: number) {
@@ -334,24 +310,12 @@ export function ManutencaoFormModal({
                 <h3 className="text-sm font-semibold uppercase text-zinc-500">Peças</h3>
                 <button
                   className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium"
-                  onClick={() => setPecas((atuais) => [...atuais, { ...pecaVazia }])}
+                  onClick={() => abrirSeletorPeca()}
                   type="button"
                 >
                   Adicionar peça
                 </button>
               </div>
-
-              {carregandoItensEstoque && (
-                <p className="rounded-md bg-zinc-50 px-3 py-2 text-sm text-zinc-500">
-                  Carregando pecas do estoque...
-                </p>
-              )}
-
-              {erroItensEstoque && (
-                <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-                  Nao foi possivel carregar as pecas do estoque.
-                </p>
-              )}
 
               {pecas.length === 0 && (
                 <p className="rounded-md bg-zinc-50 px-3 py-3 text-sm text-zinc-500">
@@ -364,76 +328,24 @@ export function ManutencaoFormModal({
                   className="grid items-end gap-3 rounded-md border border-zinc-200 p-3 sm:grid-cols-2 xl:grid-cols-12"
                   key={indice}
                 >
-                  <label className="xl:col-span-4">
+                  <div className="xl:col-span-4">
                     <span className="text-xs font-medium text-zinc-600">Item de estoque</span>
-                    <div className="relative">
+                    <div className="mt-1 flex gap-2">
                       <input
-                        aria-label="Buscar peca no estoque"
-                        autoComplete="off"
-                        className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
-                        placeholder="Codigo, descricao ou marca"
+                        aria-label="Item de estoque"
+                        className="min-w-0 flex-1 rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm"
+                        readOnly
                         value={peca.busca_item_estoque}
-                        onChange={(event) => buscarItemEstoque(indice, event.target.value)}
-                        onFocus={() => {
-                          setIndiceBuscaAberta(indice);
-                          setBuscaItemEstoque(peca.busca_item_estoque);
-                        }}
-                        onBlur={() => {
-                          window.setTimeout(() => setIndiceBuscaAberta(null), 120);
-                        }}
                       />
-                      {indiceBuscaAberta === indice && (
-                        <div className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-zinc-200 bg-white shadow-lg">
-                          <button
-                            className="block w-full px-3 py-2 text-left text-sm text-zinc-600 hover:bg-zinc-50"
-                            onMouseDown={(event) => {
-                              event.preventDefault();
-                              setPecas((atuais) =>
-                                atuais.map((itemAtual, posicao) =>
-                                  posicao === indice
-                                    ? {
-                                        ...itemAtual,
-                                        item_estoque_id: '',
-                                        busca_item_estoque: '',
-                                      }
-                                    : itemAtual,
-                                ),
-                              );
-                              setIndiceBuscaAberta(null);
-                            }}
-                            type="button"
-                          >
-                            Peca avulsa
-                          </button>
-                          {itens?.dados.map((item) => (
-                            <button
-                              className="block w-full px-3 py-2 text-left text-sm hover:bg-emerald-50"
-                              key={item.id}
-                              onMouseDown={(event) => {
-                                event.preventDefault();
-                                selecionarItemEstoque(indice, item);
-                              }}
-                              type="button"
-                            >
-                              <span className="block font-medium text-zinc-900">
-                                {item.descricao}
-                              </span>
-                              <span className="block text-xs text-zinc-500">
-                                {item.codigo ? `${item.codigo} - ` : ''}
-                                {item.marca ? `${item.marca} - ` : ''}
-                                {item.saldo_atual} {item.unidade_medida}
-                              </span>
-                            </button>
-                          ))}
-                          {!carregandoItensEstoque && itens?.dados.length === 0 && (
-                            <div className="px-3 py-2 text-sm text-zinc-500">
-                              Nenhum item encontrado.
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      <button
+                        className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium hover:bg-zinc-50"
+                        onClick={() => abrirSeletorPeca(indice)}
+                        type="button"
+                      >
+                        Alterar
+                      </button>
                     </div>
-                  </label>
+                  </div>
                   <label className="xl:col-span-3">
                     <span className="text-xs font-medium text-zinc-600">Descrição da peça</span>
                     <input
@@ -545,6 +457,285 @@ export function ManutencaoFormModal({
           </div>
         </form>
       </div>
+
+      <SeletorPecaModal
+        aberto={seletorPecaAberto}
+        onFechar={() => setSeletorPecaAberto(false)}
+        onSelecionarAvulsa={selecionarPeca}
+        onSelecionarItem={(item) =>
+          selecionarPeca({
+            ...pecaVazia,
+            item_estoque_id: item.id,
+            busca_item_estoque: formatarItemEstoque(item),
+            descricao_peca: item.descricao,
+          })
+        }
+      />
+    </div>
+  );
+}
+
+function SeletorPecaModal({
+  aberto,
+  onFechar,
+  onSelecionarAvulsa,
+  onSelecionarItem,
+}: {
+  aberto: boolean;
+  onFechar: () => void;
+  onSelecionarAvulsa: (peca: PecaFormValues) => void;
+  onSelecionarItem: (item: ItemEstoque) => void;
+}) {
+  const [busca, setBusca] = useState('');
+  const [categoria, setCategoria] = useState<CategoriaItemEstoque | ''>('');
+  const [pagina, setPagina] = useState(1);
+  const [modoAvulsa, setModoAvulsa] = useState(false);
+  const [avulsa, setAvulsa] = useState({ descricao: '', quantidade: '', preco_unitario: '' });
+  const { data, isError, isLoading } = useItensEstoque({
+    ativo: true,
+    com_saldo: true,
+    busca: busca.trim() || undefined,
+    categoria: categoria || undefined,
+    pagina,
+    limite: 10,
+  });
+
+  useEffect(() => {
+    if (!aberto) return;
+    setBusca('');
+    setCategoria('');
+    setPagina(1);
+    setModoAvulsa(false);
+    setAvulsa({ descricao: '', quantidade: '', preco_unitario: '' });
+  }, [aberto]);
+
+  if (!aberto) return null;
+
+  const totalPaginas = data?.total_paginas ?? 1;
+
+  return (
+    <div
+      aria-labelledby="titulo-seletor-peca"
+      aria-modal="true"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-950/50 px-4"
+      role="dialog"
+    >
+      <div className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-md bg-white p-6 shadow-xl">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-zinc-950" id="titulo-seletor-peca">
+              Selecionar peça
+            </h2>
+            <p className="mt-1 text-sm text-zinc-500">Itens com saldo disponível no estoque</p>
+          </div>
+          <BotaoFecharModal onClick={onFechar} />
+        </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-[minmax(0,1fr)_240px]">
+          <label>
+            <span className="text-sm font-medium text-zinc-700">Buscar</span>
+            <input
+              aria-label="Buscar peça no estoque"
+              autoComplete="off"
+              className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+              onChange={(event) => {
+                setBusca(event.target.value);
+                setPagina(1);
+              }}
+              placeholder="Código, descrição ou marca"
+              value={busca}
+            />
+          </label>
+
+          <label>
+            <span className="text-sm font-medium text-zinc-700">Categoria</span>
+            <select
+              aria-label="Filtrar por categoria"
+              className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+              onChange={(event) => {
+                setCategoria(event.target.value as CategoriaItemEstoque | '');
+                setPagina(1);
+              }}
+              value={categoria}
+            >
+              <option value="">Todas as categorias</option>
+              {categoriasItemEstoque.map((item) => (
+                <option key={item} value={item}>
+                  {formatarCategoria(item)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <button
+          className="mt-4 w-full rounded-md border border-dashed border-zinc-300 px-4 py-3 text-left text-sm font-medium text-zinc-700 hover:border-emerald-500 hover:bg-emerald-50"
+          onClick={() => setModoAvulsa(true)}
+          type="button"
+        >
+          Peça avulsa
+          <span className="mt-0.5 block text-xs font-normal text-zinc-500">
+            Informar uma peça que não está cadastrada no estoque
+          </span>
+        </button>
+
+        {modoAvulsa && (
+          <div className="mt-4 border-l-4 border-emerald-600 bg-emerald-50 p-4">
+            <h3 className="text-sm font-semibold text-zinc-900">Nova peça avulsa</h3>
+            <div className="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+              <label className="md:col-span-2">
+                <span className="text-sm font-medium text-zinc-700">Descrição da peça</span>
+                <input
+                  autoFocus
+                  className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+                  onChange={(event) =>
+                    setAvulsa((atual) => ({ ...atual, descricao: event.target.value }))
+                  }
+                  value={avulsa.descricao}
+                />
+              </label>
+              <label>
+                <span className="text-sm font-medium text-zinc-700">Quantidade</span>
+                <input
+                  className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+                  inputMode="decimal"
+                  onChange={(event) =>
+                    setAvulsa((atual) => ({
+                      ...atual,
+                      quantidade: normalizarQuantidade(event.target.value),
+                    }))
+                  }
+                  value={avulsa.quantidade}
+                />
+              </label>
+              <label>
+                <span className="text-sm font-medium text-zinc-700">Preço unitário (R$)</span>
+                <input
+                  className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2"
+                  min="0"
+                  onChange={(event) =>
+                    setAvulsa((atual) => ({ ...atual, preco_unitario: event.target.value }))
+                  }
+                  step="0.01"
+                  type="number"
+                  value={avulsa.preco_unitario}
+                />
+              </label>
+            </div>
+            <div className="mt-3 flex justify-end gap-2">
+              <button
+                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium"
+                onClick={() => setModoAvulsa(false)}
+                type="button"
+              >
+                Cancelar
+              </button>
+              <button
+                className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                disabled={!avulsa.descricao.trim() || Number(avulsa.quantidade) <= 0}
+                onClick={() =>
+                  onSelecionarAvulsa({
+                    ...pecaVazia,
+                    busca_item_estoque: 'Peça avulsa',
+                    descricao_peca: avulsa.descricao.trim(),
+                    quantidade: Number(avulsa.quantidade),
+                    preco_unitario: avulsa.preco_unitario ? Number(avulsa.preco_unitario) : '',
+                  })
+                }
+                type="button"
+              >
+                Adicionar peça avulsa
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4 overflow-x-auto rounded-md border border-zinc-200">
+          <table className="min-w-full divide-y divide-zinc-200">
+            <thead className="bg-zinc-50">
+              <tr>
+                {['Código', 'Peça', 'Marca', 'Categoria', 'Disponível', ''].map((coluna) => (
+                  <th
+                    className="px-3 py-2 text-left text-xs font-semibold uppercase text-zinc-500"
+                    key={coluna || 'acao'}
+                  >
+                    {coluna}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-200 bg-white">
+              {data?.dados.map((item) => (
+                <tr key={item.id}>
+                  <td className="whitespace-nowrap px-3 py-3 text-sm text-zinc-600">
+                    {item.codigo || '-'}
+                  </td>
+                  <td className="min-w-56 px-3 py-3 text-sm font-medium text-zinc-900">
+                    {item.descricao}
+                  </td>
+                  <td className="px-3 py-3 text-sm text-zinc-600">{item.marca || '-'}</td>
+                  <td className="px-3 py-3 text-sm text-zinc-600">
+                    {formatarCategoria(item.categoria)}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3 text-sm font-medium text-emerald-800">
+                    {item.saldo_atual} {item.unidade_medida}
+                  </td>
+                  <td className="px-3 py-3 text-right">
+                    <button
+                      className="rounded-md border border-emerald-700 px-3 py-1.5 text-sm font-medium text-emerald-800 hover:bg-emerald-50"
+                      onClick={() => onSelecionarItem(item)}
+                      type="button"
+                    >
+                      Selecionar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {isLoading && (
+            <p className="px-4 py-6 text-center text-sm text-zinc-500">Carregando...</p>
+          )}
+          {isError && (
+            <p className="px-4 py-6 text-center text-sm text-red-700">
+              Não foi possível carregar as peças do estoque.
+            </p>
+          )}
+          {!isLoading && !isError && data?.dados.length === 0 && (
+            <p className="px-4 py-6 text-center text-sm text-zinc-500">
+              Nenhuma peça com saldo disponível foi encontrada.
+            </p>
+          )}
+        </div>
+
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <span className="text-sm text-zinc-500">
+            {data?.total ?? 0} {data?.total === 1 ? 'item' : 'itens'}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium disabled:opacity-50"
+              disabled={pagina <= 1}
+              onClick={() => setPagina((atual) => Math.max(atual - 1, 1))}
+              type="button"
+            >
+              Anterior
+            </button>
+            <span className="min-w-20 text-center text-sm text-zinc-600">
+              {pagina} de {totalPaginas}
+            </span>
+            <button
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium disabled:opacity-50"
+              disabled={pagina >= totalPaginas}
+              onClick={() => setPagina((atual) => atual + 1)}
+              type="button"
+            >
+              Próxima
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -553,8 +744,25 @@ function formatarMoeda(valor: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
 }
 
+function normalizarQuantidade(valor: string) {
+  const partes = valor
+    .replace(',', '.')
+    .replace(/[^\d.]/g, '')
+    .split('.');
+  const inteiro = partes.shift() ?? '';
+  const decimal = partes.join('').slice(0, 1);
+
+  return partes.length > 0 || valor.includes('.') || valor.includes(',')
+    ? `${inteiro}.${decimal}`
+    : inteiro;
+}
+
 function formatarItemEstoque(item: ItemEstoque) {
   const codigo = item.codigo ? `${item.codigo} - ` : '';
   const marca = item.marca ? ` - ${item.marca}` : '';
   return `${codigo}${item.descricao}${marca}`;
+}
+
+function formatarCategoria(categoria: CategoriaItemEstoque) {
+  return categoria === 'peca' ? 'Peça' : categoria.charAt(0).toUpperCase() + categoria.slice(1);
 }

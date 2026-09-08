@@ -34,6 +34,10 @@ describe('ManutencaoFormModal', () => {
     render(<ManutencaoFormModal aberto onFechar={vi.fn()} onSalvar={vi.fn()} />);
 
     await userEvent.click(screen.getByRole('button', { name: /adicionar peça/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^peça avulsa/i }));
+    await userEvent.type(screen.getByLabelText(/descrição da peça/i), 'Arruela avulsa');
+    await userEvent.type(screen.getByLabelText(/quantidade/i), '1');
+    await userEvent.click(screen.getByRole('button', { name: /adicionar peça avulsa/i }));
 
     expect(screen.getByLabelText(/item de estoque/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/descrição da peça/i)).toBeInTheDocument();
@@ -46,7 +50,13 @@ describe('ManutencaoFormModal', () => {
     render(<ManutencaoFormModal aberto onFechar={vi.fn()} onSalvar={vi.fn()} />);
 
     await userEvent.click(screen.getByRole('button', { name: /adicionar peça/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^peça avulsa/i }));
+    await userEvent.type(screen.getByLabelText(/descrição da peça/i), 'Arruela avulsa');
+    await userEvent.type(screen.getByLabelText(/quantidade/i), '1');
+    await userEvent.click(screen.getByRole('button', { name: /adicionar peça avulsa/i }));
     const quantidade = screen.getByLabelText(/quantidade/i);
+
+    await userEvent.clear(quantidade);
 
     await userEvent.type(quantidade, '2.55');
 
@@ -67,8 +77,11 @@ describe('ManutencaoFormModal', () => {
     render(<ManutencaoFormModal aberto onFechar={vi.fn()} onSalvar={vi.fn()} />);
 
     await userEvent.click(screen.getByRole('button', { name: /adicionar peça/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^peça avulsa/i }));
+    await userEvent.type(screen.getByLabelText(/descrição da peça/i), 'Arruela avulsa');
     await userEvent.type(screen.getByLabelText(/quantidade/i), '2');
     await userEvent.type(screen.getByLabelText(/preço unitário/i), '10');
+    await userEvent.click(screen.getByRole('button', { name: /adicionar peça avulsa/i }));
     await userEvent.clear(screen.getByLabelText(/mão de obra/i));
     await userEvent.type(screen.getByLabelText(/mão de obra/i), '5');
 
@@ -82,22 +95,31 @@ describe('ManutencaoFormModal', () => {
     expect(screen.getByText('R$ 25,00')).toBeInTheDocument();
   });
 
-  it('busca itens de estoque em formato autocomplete', async () => {
+  it('abre o seletor e filtra somente itens com saldo disponivel', async () => {
     render(<ManutencaoFormModal aberto onFechar={vi.fn()} onSalvar={vi.fn()} />);
 
     expect(useItensEstoqueMock).toHaveBeenLastCalledWith({
       ativo: true,
       busca: undefined,
-      limite: 20,
+      categoria: undefined,
+      com_saldo: true,
+      limite: 10,
+      pagina: 1,
     });
 
     await userEvent.click(screen.getByRole('button', { name: /adicionar pe.a/i }));
-    await userEvent.type(screen.getByLabelText(/buscar peca no estoque/i), 'filtro');
+    expect(screen.getByRole('dialog', { name: /selecionar pe.a/i })).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText(/buscar pe.a no estoque/i), 'filtro');
+    await userEvent.selectOptions(screen.getByLabelText(/filtrar por categoria/i), 'filtro');
 
     expect(useItensEstoqueMock).toHaveBeenLastCalledWith({
       ativo: true,
       busca: 'filtro',
-      limite: 20,
+      categoria: 'filtro',
+      com_saldo: true,
+      limite: 10,
+      pagina: 1,
     });
   });
 });
