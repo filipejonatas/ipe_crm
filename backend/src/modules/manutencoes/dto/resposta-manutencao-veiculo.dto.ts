@@ -10,6 +10,9 @@ export class RespostaManutencaoPecaDto {
 }
 
 export class RespostaManutencaoVeiculoDto {
+  troca_oleo!: boolean;
+  proxima_troca_oleo!: string | null;
+  proxima_troca_oleo_km!: number | null;
   id!: string;
   veiculo_id!: string;
   placa!: string;

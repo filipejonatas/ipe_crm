@@ -35,7 +35,11 @@ export function useAtualizarManutencao() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: AtualizarManutencaoVeiculoDto }) =>
       manutencoesService.atualizar(id, dto),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['manutencoes-veiculos'] }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['manutencoes-veiculos'] });
+      void queryClient.invalidateQueries({ queryKey: ['itens-estoque'] });
+      void queryClient.invalidateQueries({ queryKey: ['movimentacoes-estoque'] });
+    },
   });
 }
 

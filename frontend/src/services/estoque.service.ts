@@ -40,6 +40,7 @@ export interface MovimentacaoEstoque {
 }
 
 export interface FiltrosItensEstoque {
+  veiculo_id?: string;
   busca?: string;
   categoria?: CategoriaItemEstoque;
   ativo?: boolean;

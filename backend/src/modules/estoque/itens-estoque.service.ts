@@ -120,6 +120,12 @@ export class ItensEstoqueService {
     }
 
     if (filtros.categoria) query.andWhere('item.categoria = :categoria', filtros);
+    if (filtros.veiculo_id) {
+      query.andWhere(
+        'EXISTS (SELECT 1 FROM item_estoque_veiculos vinculo WHERE vinculo.item_estoque_id = item.id AND vinculo.veiculo_id = :veiculo_id)',
+        { veiculo_id: filtros.veiculo_id },
+      );
+    }
     if (filtros.ativo !== undefined) query.andWhere('item.ativo = :ativo', filtros);
     if (filtros.baixo_estoque) query.andWhere('item.saldo_atual <= item.estoque_minimo');
     if (filtros.com_saldo) query.andWhere('item.saldo_atual > 0');
@@ -181,25 +187,31 @@ export class ItensEstoqueService {
   async vincularVeiculos(itemId: string, dto: VincularVeiculosItemDto, usuario?: UsuarioAuditoria) {
     const item = await this.buscarEntidadePorId(itemId);
     const idsUnicos = [...new Set(dto.veiculos_ids)];
+    const anteriores = await this.listarVeiculosCompativeis(itemId);
     const veiculos = await this.veiculosRepository.find({
-      where: { id: In(idsUnicos), ativo: true, excluido_em: IsNull() },
+      where: { id: In(idsUnicos), excluido_em: IsNull() },
     });
 
-    if (veiculos.length !== idsUnicos.length) {
+    if (
+      veiculos.length !== idsUnicos.length ||
+      veiculos.some(
+        (veiculo) => !veiculo.ativo && !anteriores.some((anterior) => anterior.id === veiculo.id),
+      )
+    ) {
       throw new BadRequestException('Um ou mais veiculos informados nao existem ou estao inativos');
     }
 
-    const anteriores = await this.listarVeiculosCompativeis(itemId);
-    await this.compatibilidadesRepository
-      .createQueryBuilder()
-      .delete()
-      .where('item_estoque_id = :itemId', { itemId })
-      .execute();
-    await this.compatibilidadesRepository.save(
-      veiculos.map((veiculo) =>
-        this.compatibilidadesRepository.create({ item_estoque: item, veiculo }),
-      ),
-    );
+    await this.compatibilidadesRepository.manager.transaction(async (manager) => {
+      await manager.getRepository(ItemEstoque).findOne({
+        where: { id: itemId },
+        lock: { mode: 'pessimistic_write' },
+      });
+      const repository = manager.getRepository(ItemEstoqueVeiculo);
+      await repository.delete({ item_estoque: { id: itemId } });
+      await repository.save(
+        veiculos.map((veiculo) => repository.create({ item_estoque: item, veiculo })),
+      );
+    });
 
     await this.registrarAuditoria(
       AcaoAuditoria.EDICAO,
@@ -219,7 +231,9 @@ export class ItensEstoqueService {
       relations: { veiculo: true },
       order: { criado_em: 'ASC' },
     });
-    return vinculos.map((vinculo) => vinculo.veiculo);
+    return vinculos
+      .map((vinculo) => vinculo.veiculo)
+      .filter((veiculo) => veiculo && !veiculo.excluido_em);
   }
 
   private async buscarEntidadePorId(id: string): Promise<ItemEstoque> {

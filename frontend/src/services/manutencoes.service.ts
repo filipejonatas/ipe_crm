@@ -13,6 +13,9 @@ export interface ManutencaoPeca {
 }
 
 export interface ManutencaoVeiculo {
+  proxima_troca_oleo_km?: number | null;
+  troca_oleo?: boolean;
+  proxima_troca_oleo?: string | null;
   id: string;
   veiculo_id: string;
   placa: string;
@@ -37,6 +40,9 @@ export interface PecaManutencaoDto {
 }
 
 export interface CriarManutencaoVeiculoDto {
+  proxima_troca_oleo_km?: number | null;
+  troca_oleo?: boolean;
+  proxima_troca_oleo?: string | null;
   veiculo_id: string;
   data_manutencao: string;
   descricao: string;
@@ -46,7 +52,7 @@ export interface CriarManutencaoVeiculoDto {
   pecas?: PecaManutencaoDto[];
 }
 
-export type AtualizarManutencaoVeiculoDto = Partial<Omit<CriarManutencaoVeiculoDto, 'pecas'>>;
+export type AtualizarManutencaoVeiculoDto = Partial<CriarManutencaoVeiculoDto>;
 
 export interface FiltrosManutencoesVeiculo {
   veiculo_id?: string;
@@ -58,6 +64,15 @@ export interface FiltrosManutencoesVeiculo {
 }
 
 export const manutencoesService = {
+  async listarTrocasOleo(
+    filtros: FiltrosManutencoesVeiculo,
+  ): Promise<RespostaPaginada<ManutencaoVeiculo>> {
+    const { data } = await api.get<RespostaPaginada<ManutencaoVeiculo>>(
+      '/api/v1/manutencoes-veiculos/trocas-oleo',
+      { params: filtros },
+    );
+    return data;
+  },
   async listar(filtros: FiltrosManutencoesVeiculo): Promise<RespostaPaginada<ManutencaoVeiculo>> {
     const { data } = await api.get<RespostaPaginada<ManutencaoVeiculo>>(
       '/api/v1/manutencoes-veiculos',

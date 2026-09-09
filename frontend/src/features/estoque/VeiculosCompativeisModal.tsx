@@ -9,6 +9,7 @@ interface Props {
   item?: ItemEstoque | null;
   somenteLeitura?: boolean;
   salvando?: boolean;
+  erro?: boolean;
   onFechar: () => void;
   onSalvar: (veiculosIds: string[]) => void;
 }
@@ -18,16 +19,26 @@ export function VeiculosCompativeisModal({
   item,
   somenteLeitura,
   salvando,
+  erro,
   onFechar,
   onSalvar,
 }: Props) {
-  const { data: veiculos } = useVeiculos({ ativo: true, limite: 100 });
-  const { data: compativeis } = useVeiculosCompativeis(item?.id);
+  const [pagina, setPagina] = useState(1);
+  const [busca, setBusca] = useState('');
+  const veiculosQuery = useVeiculos({ busca, pagina, limite: 20 });
+  const { data: veiculos } = veiculosQuery;
+  const compativeisQuery = useVeiculosCompativeis(aberto ? item?.id : undefined);
+  const { data: compativeis } = compativeisQuery;
   const [selecionados, setSelecionados] = useState<string[]>([]);
 
   useEffect(() => {
     setSelecionados(compativeis?.map((veiculo) => veiculo.id) ?? []);
-  }, [aberto, compativeis]);
+  }, [aberto, item?.id, compativeis]);
+
+  useEffect(() => {
+    setPagina(1);
+    setBusca('');
+  }, [aberto, item?.id]);
 
   if (!aberto || !item) return null;
 
@@ -45,6 +56,29 @@ export function VeiculosCompativeisModal({
           <BotaoFecharModal onClick={onFechar} />
         </div>
         <p className="mt-1 text-sm text-zinc-500">{item.descricao}</p>
+        {erro && (
+          <p role="alert" className="mt-2 text-sm text-red-600">
+            Não foi possível salvar os vínculos. Tente novamente.
+          </p>
+        )}
+        <input
+          aria-label="Buscar veículo"
+          placeholder="Buscar veículo"
+          value={busca}
+          className="mt-4 w-full rounded-md border border-zinc-300 px-3 py-2"
+          onChange={(event) => {
+            setBusca(event.target.value);
+            setPagina(1);
+          }}
+        />
+        {(veiculosQuery.isPending || compativeisQuery.isPending) && (
+          <p role="status">Carregando veículos e vínculos...</p>
+        )}
+        {(veiculosQuery.isError || compativeisQuery.isError) && (
+          <p role="alert">
+            Não foi possível carregar os veículos ou vínculos. Feche e tente novamente.
+          </p>
+        )}
         <div className="mt-5 divide-y divide-zinc-200 rounded-md border border-zinc-200">
           {veiculos?.dados.length === 0 && (
             <p className="px-4 py-5 text-sm text-zinc-500">Nenhum veiculo ativo encontrado.</p>
@@ -54,16 +88,40 @@ export function VeiculosCompativeisModal({
               <input
                 className="h-4 w-4"
                 checked={selecionados.includes(veiculo.id)}
-                disabled={somenteLeitura}
+                disabled={
+                  somenteLeitura ||
+                  salvando ||
+                  compativeisQuery.isPending ||
+                  compativeisQuery.isError ||
+                  (!veiculo.ativo && !selecionados.includes(veiculo.id))
+                }
                 type="checkbox"
                 onChange={() => alternar(veiculo.id)}
               />
               <span className="text-sm text-zinc-800">
                 {veiculo.placa} - {veiculo.modelo} / {veiculo.marca}
+                {!veiculo.ativo && ' (inativo)'}
               </span>
             </label>
           ))}
         </div>
+        {(veiculos?.total_paginas ?? 0) > 1 && (
+          <div className="mt-3 flex justify-between">
+            <button type="button" disabled={pagina === 1} onClick={() => setPagina(pagina - 1)}>
+              Anterior
+            </button>
+            <span>
+              Página {pagina} de {veiculos?.total_paginas}
+            </span>
+            <button
+              type="button"
+              disabled={pagina >= (veiculos?.total_paginas ?? 0)}
+              onClick={() => setPagina(pagina + 1)}
+            >
+              Próxima
+            </button>
+          </div>
+        )}
         <div className="mt-5 flex justify-end gap-2">
           {!somenteLeitura && (
             <button
@@ -77,7 +135,13 @@ export function VeiculosCompativeisModal({
           {!somenteLeitura && (
             <button
               className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-              disabled={salvando}
+              disabled={
+                salvando ||
+                compativeisQuery.isPending ||
+                compativeisQuery.isError ||
+                veiculosQuery.isPending ||
+                veiculosQuery.isError
+              }
               type="button"
               onClick={() => onSalvar(selecionados)}
             >

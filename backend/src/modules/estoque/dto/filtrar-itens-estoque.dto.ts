@@ -1,5 +1,5 @@
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 import { CategoriaItemEstoque } from '../entities/categoria-item-estoque.enum';
 
 function transformarBooleano(value: unknown): boolean | undefined {
@@ -9,6 +9,10 @@ function transformarBooleano(value: unknown): boolean | undefined {
 }
 
 export class FiltrarItensEstoqueDto {
+  @IsOptional()
+  @IsUUID()
+  veiculo_id?: string;
+
   @IsOptional()
   @IsString()
   busca?: string;

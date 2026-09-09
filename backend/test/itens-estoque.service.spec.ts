@@ -88,6 +88,20 @@ describe('ItensEstoqueService', () => {
     await expect(service.proximoCodigo()).resolves.toEqual({ codigo: '10' });
   });
 
+  it('consulta compatibilidade pelo vínculo do veículo e categoria', async () => {
+    const qb = criarQueryBuilder();
+    repository.createQueryBuilder.mockReturnValue(qb);
+    await service.listar({ veiculo_id: 'veiculo-1', categoria: CategoriaItemEstoque.FILTRO });
+    expect(qb.andWhere).toHaveBeenCalledWith(
+      expect.stringContaining('vinculo.veiculo_id = :veiculo_id'),
+      { veiculo_id: 'veiculo-1' },
+    );
+    expect(qb.andWhere).toHaveBeenCalledWith(
+      'item.categoria = :categoria',
+      expect.objectContaining({ categoria: CategoriaItemEstoque.FILTRO }),
+    );
+  });
+
   it('criar cria movimentacao de entrada quando saldo_inicial > 0', async () => {
     repository.findOne.mockResolvedValueOnce(criarItem({ saldo_atual: 5 }));
 

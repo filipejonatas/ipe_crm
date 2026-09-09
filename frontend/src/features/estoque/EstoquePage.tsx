@@ -348,11 +348,13 @@ export function EstoquePage() {
         item={selecionado}
         somenteLeitura={!podeEditarVeiculos}
         salvando={vincularVeiculos.isPending}
+        erro={vincularVeiculos.isError}
         onFechar={fecharModal}
         onSalvar={(veiculosIds) =>
-          void vincularVeiculos
-            .mutateAsync({ itemId: selecionado!.id, veiculosIds })
-            .then(fecharModal)
+          vincularVeiculos.mutate(
+            { itemId: selecionado!.id, veiculosIds },
+            { onSuccess: fecharModal },
+          )
         }
       />
       <HistoricoMovimentacoesModal

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useItensEstoque } from '@/features/estoque/hooks/useItensEstoque';
 import { ManutencaoFormModal } from './ManutencaoFormModal';
@@ -14,6 +14,125 @@ vi.mock('@/features/veiculos/hooks/useVeiculos', () => ({
 const useItensEstoqueMock = vi.mocked(useItensEstoque);
 
 describe('ManutencaoFormModal', () => {
+  it('carrega peças existentes e permite adicionar uma peça ao editar', async () => {
+    const onSalvar = vi.fn();
+    render(
+      <ManutencaoFormModal
+        aberto
+        onFechar={vi.fn()}
+        onSalvar={onSalvar}
+        manutencao={
+          {
+            veiculo_id: '',
+            data_manutencao: '2026-09-09',
+            descricao: 'Revisão',
+            custo_mao_obra: 20,
+            pecas: [
+              {
+                id: 'p1',
+                item_estoque_id: 'i1',
+                descricao_peca: 'Filtro existente',
+                quantidade: 2,
+                preco_unitario: 5,
+              },
+            ],
+          } as never
+        }
+      />,
+    );
+    const veiculo = screen.getByLabelText(/^veículo/i);
+    const option = document.createElement('option');
+    option.value = 'v1';
+    option.textContent = 'ABC1234';
+    veiculo.appendChild(option);
+    await userEvent.selectOptions(veiculo, 'v1');
+    expect(screen.getByLabelText(/descrição da peça/i)).toHaveValue('Filtro existente');
+    expect(screen.getByText('R$ 30,00')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /adicionar peça/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^peça avulsa/i }));
+    const descricoes = screen.getAllByLabelText(/descrição da peça/i);
+    await userEvent.type(descricoes[descricoes.length - 1], 'Arruela nova');
+    const quantidades = screen.getAllByLabelText(/quantidade/i);
+    await userEvent.type(quantidades[quantidades.length - 1], '1');
+    await userEvent.click(screen.getByRole('button', { name: /adicionar peça avulsa/i }));
+    await userEvent.click(screen.getByRole('button', { name: /salvar/i }));
+    await waitFor(() =>
+      expect(onSalvar).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pecas: [
+            expect.objectContaining({ item_estoque_id: 'i1', quantidade: 2, preco_unitario: 5 }),
+            expect.objectContaining({ descricao_peca: 'Arruela nova', quantidade: 1 }),
+          ],
+        }),
+      ),
+    );
+    await userEvent.click(screen.getAllByRole('button', { name: /remover peça/i })[0]);
+    await userEvent.click(screen.getByRole('button', { name: /salvar/i }));
+    await waitFor(() =>
+      expect(onSalvar).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          pecas: [expect.objectContaining({ descricao_peca: 'Arruela nova' })],
+        }),
+      ),
+    );
+  });
+
+  it('exige a próxima data ao marcar troca de óleo e envia o prazo informado', async () => {
+    const onSalvar = vi.fn();
+    render(
+      <ManutencaoFormModal
+        aberto
+        onFechar={vi.fn()}
+        onSalvar={onSalvar}
+        manutencao={
+          {
+            veiculo_id: '',
+            data_manutencao: '2026-09-09',
+            descricao: 'Troca',
+            custo_mao_obra: 0,
+          } as never
+        }
+      />,
+    );
+    const veiculo = screen.getByLabelText(/^veículo/i);
+    const option = document.createElement('option');
+    option.value = 'v1';
+    option.textContent = 'ABC1234';
+    veiculo.appendChild(option);
+    await userEvent.selectOptions(veiculo, 'v1');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Troca de óleo' }));
+    await userEvent.click(screen.getByRole('button', { name: /salvar/i }));
+    expect(await screen.findByText(/Informe uma data de próxima troca/)).toBeInTheDocument();
+    expect(onSalvar).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText(/Data da próxima troca de óleo/), {
+      target: { value: '2027-03-09' },
+    });
+    await userEvent.click(screen.getByRole('button', { name: /salvar/i }));
+    await waitFor(() =>
+      expect(onSalvar).toHaveBeenCalledWith(
+        expect.objectContaining({
+          troca_oleo: true,
+          proxima_troca_oleo: '2027-03-09',
+          proxima_troca_oleo_km: null,
+        }),
+      ),
+    );
+    await userEvent.type(screen.getByLabelText(/Próxima quilometragem/), '60000');
+    await userEvent.click(screen.getByRole('button', { name: /salvar/i }));
+    await waitFor(() =>
+      expect(onSalvar).toHaveBeenLastCalledWith(
+        expect.objectContaining({ proxima_troca_oleo_km: 60000 }),
+      ),
+    );
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Troca de óleo' }));
+    await userEvent.click(screen.getByRole('button', { name: /salvar/i }));
+    await waitFor(() =>
+      expect(onSalvar).toHaveBeenLastCalledWith(
+        expect.objectContaining({ troca_oleo: false, proxima_troca_oleo_km: null }),
+      ),
+    );
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
   });

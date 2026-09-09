@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsInt,
   IsNumber,
@@ -14,6 +15,21 @@ import {
 import { PecaManutencaoDto } from './peca-manutencao.dto';
 
 export class CriarManutencaoVeiculoDto {
+  @IsOptional()
+  @IsBoolean()
+  troca_oleo?: boolean;
+
+  @IsOptional()
+  @IsDateString({ strict: true })
+  proxima_troca_oleo?: string | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(99_999_999)
+  proxima_troca_oleo_km?: number | null;
+
   @IsUUID('4')
   veiculo_id!: string;
 

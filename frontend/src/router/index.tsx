@@ -4,9 +4,11 @@ import { Layout } from '@/components/Layout';
 import { RotaPrivada } from '@/components/RotaPrivada';
 import { LoginPage } from '@/features/autenticacao/LoginPage';
 import { EstoquePage } from '@/features/estoque/EstoquePage';
+import { CompatibilidadePage } from '@/features/compatibilidade/CompatibilidadePage';
 import { FornecedoresPage } from '@/features/fornecedores/FornecedoresPage';
 import { ManutencoesPage } from '@/features/manutencoes/ManutencoesPage';
 import { NovaManutencaoPage } from '@/features/manutencoes/NovaManutencaoPage';
+import { TrocasOleoPage } from '@/features/manutencoes/TrocasOleoPage';
 import { VeiculosPage } from '@/features/veiculos/VeiculosPage';
 import { useAutenticacaoStore } from '@/store/autenticacao.store';
 
@@ -47,7 +49,9 @@ export const router = createBrowserRouter([
             element: <RotaPrivada perfis={[PERFIS.ADMIN, PERFIS.OFICINA]} />,
             children: [
               { path: '/manutencoes', element: <ManutencoesPage /> },
+              { path: '/compatibilidade', element: <CompatibilidadePage /> },
               { path: '/manutencoes/nova', element: <NovaManutencaoPage /> },
+              { path: '/trocas-oleo', element: <TrocasOleoPage /> },
             ],
           },
           {

@@ -27,6 +27,12 @@ export class ManutencoesVeiculoController {
     return this.manutencoesVeiculoService.listar(filtros);
   }
 
+  @Get('trocas-oleo')
+  @RotaProtegida(PERFIS.ADMIN, PERFIS.OFICINA)
+  listarTrocasOleo(@Query() filtros: FiltrarManutencoesVeiculoDto) {
+    return this.manutencoesVeiculoService.listar(filtros, true);
+  }
+
   @Get(':id')
   @RotaProtegida(PERFIS.ADMIN, PERFIS.OFICINA)
   buscarPorId(@Param('id') id: string) {

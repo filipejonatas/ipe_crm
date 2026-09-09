@@ -1,6 +1,10 @@
 import { Type } from 'class-transformer';
 import {
   IsDateString,
+  IsArray,
+  ValidateNested,
+  ValidateIf,
+  IsBoolean,
   IsInt,
   IsNumber,
   IsOptional,
@@ -9,8 +13,29 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import { PecaManutencaoDto } from './peca-manutencao.dto';
 
 export class AtualizarManutencaoVeiculoDto {
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PecaManutencaoDto)
+  pecas?: PecaManutencaoDto[];
+  @IsOptional()
+  @IsBoolean()
+  troca_oleo?: boolean;
+
+  @IsOptional()
+  @IsDateString({ strict: true })
+  proxima_troca_oleo?: string | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(99_999_999)
+  proxima_troca_oleo_km?: number | null;
+
   @IsOptional()
   @IsUUID('4')
   veiculo_id?: string;

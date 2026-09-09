@@ -12,6 +12,16 @@ interface MenuItem {
 
 const menus: MenuItem[] = [
   {
+    nome: 'Trocas de óleo',
+    caminho: '/trocas-oleo',
+    perfis: [PERFIS.ADMIN, PERFIS.OFICINA],
+  },
+  {
+    nome: 'Filtros/Veículos',
+    caminho: '/compatibilidade',
+    perfis: [PERFIS.ADMIN, PERFIS.OFICINA],
+  },
+  {
     nome: 'Estoque',
     caminho: '/estoque',
     perfis: [PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS, PERFIS.GERENTE],

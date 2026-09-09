@@ -17,6 +17,9 @@ import {
 } from '@/services/estoque.service';
 
 interface ManutencaoFormValues {
+  proxima_troca_oleo_km: number | '';
+  troca_oleo: boolean;
+  proxima_troca_oleo: string;
   veiculo_id: string;
   data_manutencao: string;
   descricao: string;
@@ -76,6 +79,9 @@ export function ManutencaoFormModal({
     formState: { errors },
   } = useForm<ManutencaoFormValues>({
     defaultValues: {
+      proxima_troca_oleo_km: '',
+      troca_oleo: false,
+      proxima_troca_oleo: '',
       veiculo_id: '',
       data_manutencao: hoje(),
       descricao: '',
@@ -85,11 +91,15 @@ export function ManutencaoFormModal({
     },
   });
   const campoQuilometragem = register('quilometragem');
+  const campoProximaKm = register('proxima_troca_oleo_km');
 
   useEffect(() => {
     reset(
       manutencao
         ? {
+            proxima_troca_oleo_km: manutencao.proxima_troca_oleo_km ?? '',
+            troca_oleo: manutencao.troca_oleo ?? false,
+            proxima_troca_oleo: manutencao.proxima_troca_oleo ?? '',
             veiculo_id: manutencao.veiculo_id,
             data_manutencao: manutencao.data_manutencao,
             descricao: manutencao.descricao,
@@ -98,6 +108,9 @@ export function ManutencaoFormModal({
             observacoes: manutencao.observacoes ?? '',
           }
         : {
+            proxima_troca_oleo_km: '',
+            troca_oleo: false,
+            proxima_troca_oleo: '',
             veiculo_id: '',
             data_manutencao: hoje(),
             descricao: '',
@@ -106,7 +119,15 @@ export function ManutencaoFormModal({
             observacoes: '',
           },
     );
-    setPecas([]);
+    setPecas(
+      (manutencao?.pecas ?? []).map((peca) => ({
+        item_estoque_id: peca.item_estoque_id ?? '',
+        busca_item_estoque: peca.item_estoque_id ? peca.descricao_peca : '',
+        descricao_peca: peca.descricao_peca,
+        quantidade: peca.quantidade,
+        preco_unitario: peca.preco_unitario,
+      })),
+    );
     setSeletorPecaAberto(false);
     setIndicePecaEmEdicao(null);
     setErroLocal('');
@@ -122,6 +143,7 @@ export function ManutencaoFormModal({
     [pecas],
   );
   const custoMaoObra = Number(watch('custo_mao_obra') || 0);
+  const trocaOleo = watch('troca_oleo');
   const totalManutencao = totalPecas + custoMaoObra;
   const pagina = variante === 'pagina';
 
@@ -155,8 +177,32 @@ export function ManutencaoFormModal({
   async function salvar(valores: ManutencaoFormValues) {
     setErroLocal('');
 
+    if (
+      valores.troca_oleo &&
+      (!valores.proxima_troca_oleo || valores.proxima_troca_oleo <= valores.data_manutencao)
+    ) {
+      setErroLocal('Informe uma data de próxima troca de óleo posterior à data da manutenção.');
+      return;
+    }
+
     const custoMaoObra = Number(valores.custo_mao_obra || 0);
     const quilometragem = valores.quilometragem === '' ? undefined : Number(valores.quilometragem);
+    const proximaKm =
+      valores.troca_oleo && valores.proxima_troca_oleo_km !== ''
+        ? Number(valores.proxima_troca_oleo_km)
+        : null;
+    if (
+      proximaKm !== null &&
+      (!Number.isInteger(proximaKm) ||
+        proximaKm < 1 ||
+        proximaKm > 99_999_999 ||
+        (quilometragem !== undefined && proximaKm <= quilometragem))
+    ) {
+      setErroLocal(
+        'A próxima quilometragem deve ser maior que a quilometragem da manutenção e ter até 8 dígitos.',
+      );
+      return;
+    }
     const pecasDto: PecaManutencaoDto[] = [];
 
     for (const peca of pecas) {
@@ -188,13 +234,16 @@ export function ManutencaoFormModal({
 
     try {
       await onSalvar({
+        proxima_troca_oleo_km: proximaKm,
+        troca_oleo: valores.troca_oleo,
+        proxima_troca_oleo: valores.troca_oleo ? valores.proxima_troca_oleo : null,
         veiculo_id: valores.veiculo_id,
         data_manutencao: valores.data_manutencao,
         descricao: valores.descricao,
         quilometragem,
         custo_mao_obra: custoMaoObra,
         observacoes: valores.observacoes || null,
-        pecas: editando ? undefined : pecasDto,
+        pecas: pecasDto,
       });
     } catch (error) {
       const mensagem =
@@ -235,6 +284,46 @@ export function ManutencaoFormModal({
         </div>
 
         <form className="mt-5 space-y-5" onSubmit={handleSubmit(salvar)}>
+          <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input type="checkbox" className="h-4 w-4" {...register('troca_oleo')} />
+              Troca de óleo
+            </label>
+            {trocaOleo && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="mt-3 block text-sm">
+                  <span className="font-medium">Data da próxima troca de óleo</span>
+                  <input
+                    type="date"
+                    className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 sm:max-w-xs"
+                    {...register('proxima_troca_oleo')}
+                  />
+                  <span className="mt-1 block text-zinc-600">
+                    Esta data será usada na lista de próximas trocas do veículo.
+                  </span>
+                </label>
+                <label className="mt-3 block text-sm">
+                  <span className="font-medium">Próxima quilometragem (km)</span>
+                  <input
+                    className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 sm:max-w-xs"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={8}
+                    pattern="[0-9]*"
+                    placeholder="Ex.: 60000"
+                    {...campoProximaKm}
+                    onChange={(event) => {
+                      event.target.value = event.target.value.replace(/\D/g, '').slice(0, 8);
+                      void campoProximaKm.onChange(event);
+                    }}
+                  />
+                  <span className="mt-1 block text-zinc-600">
+                    Opcional. Quilometragem do veículo prevista para a próxima troca.
+                  </span>
+                </label>
+              </div>
+            )}
+          </div>
           <div className="grid gap-4 md:grid-cols-3">
             <label>
               <span className="text-sm font-medium text-zinc-700">Veículo</span>
@@ -304,7 +393,7 @@ export function ManutencaoFormModal({
             </label>
           </div>
 
-          {!editando && (
+          <>
             <div className="space-y-3 border-t border-zinc-200 pt-5">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-sm font-semibold uppercase text-zinc-500">Peças</h3>
@@ -398,7 +487,7 @@ export function ManutencaoFormModal({
                 </div>
               ))}
             </div>
-          )}
+          </>
 
           <div className="border-t border-zinc-200 pt-5">
             <div className="grid items-end gap-4 md:grid-cols-3">

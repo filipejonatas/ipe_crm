@@ -33,6 +33,15 @@ export class ManutencaoVeiculo {
   @Column({ type: 'date' })
   data_manutencao!: string;
 
+  @Column({ type: 'boolean', default: false })
+  troca_oleo!: boolean;
+
+  @Column({ type: 'date', nullable: true })
+  proxima_troca_oleo!: string | null;
+
+  @Column({ type: 'integer', nullable: true })
+  proxima_troca_oleo_km!: number | null;
+
   @Index()
   @Column({ type: 'varchar', length: 10 })
   placa_snapshot!: string;
