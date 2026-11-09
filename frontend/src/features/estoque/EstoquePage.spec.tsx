@@ -116,7 +116,7 @@ describe('EstoquePage', () => {
 
   it('destaca item com baixo estoque', () => {
     render(<EstoquePage />);
-    expect(screen.getByText('Filtro de oleo').closest('tr')).toHaveClass('bg-amber-50');
+    expect(screen.getByText('Filtro de oleo').closest('tr')).toHaveClass('linha-baixo-estoque');
   });
 
   it('oculta botao de ajuste para perfil oficina', () => {

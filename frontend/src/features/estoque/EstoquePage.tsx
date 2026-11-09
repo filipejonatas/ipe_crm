@@ -26,6 +26,8 @@ import { RegistrarAjusteModal } from './RegistrarAjusteModal';
 import { RegistrarSaidaModal } from './RegistrarSaidaModal';
 import { VeiculosCompativeisModal } from './VeiculosCompativeisModal';
 
+const colunasNumericas = ['Saldo', 'Mínimo'];
+
 type ModalAtivo = 'item' | 'saida' | 'ajuste' | 'veiculos' | 'historico' | null;
 
 export function EstoquePage() {
@@ -97,24 +99,20 @@ export function EstoquePage() {
     <section className="space-y-5">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-950">Estoque</h1>
-          <p className="text-sm text-zinc-500">Itens, saldos e movimentações da oficina.</p>
+          <h1 className="titulo-pagina">Estoque</h1>
+          <p className="subtitulo-pagina">Itens, saldos e movimentações da oficina.</p>
         </div>
         {podeCriarEditar && (
-          <button
-            className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white"
-            onClick={() => abrir('item')}
-            type="button"
-          >
+          <button className="btn-primario" onClick={() => abrir('item')} type="button">
             Novo item
           </button>
         )}
       </div>
 
-      <div className="grid gap-3 rounded-md border border-zinc-200 bg-white p-4 lg:grid-cols-[1fr_180px_160px_150px]">
+      <div className="painel grid gap-3 p-4 lg:grid-cols-[1fr_180px_160px_auto]">
         <input
           aria-label="Buscar itens"
-          className="rounded-md border border-zinc-300 px-3 py-2"
+          className="campo"
           placeholder="Buscar por código, descrição ou marca"
           value={busca}
           onChange={(event) => {
@@ -124,7 +122,7 @@ export function EstoquePage() {
         />
         <select
           aria-label="Categoria"
-          className="rounded-md border border-zinc-300 px-3 py-2"
+          className="campo"
           value={categoria}
           onChange={(event) => {
             setPagina(1);
@@ -140,7 +138,7 @@ export function EstoquePage() {
         </select>
         <select
           aria-label="Status"
-          className="rounded-md border border-zinc-300 px-3 py-2"
+          className="campo"
           value={ativo}
           onChange={(event) => {
             setPagina(1);
@@ -151,10 +149,10 @@ export function EstoquePage() {
           <option value="true">Ativos</option>
           <option value="false">Inativos</option>
         </select>
-        <label className="flex items-center gap-2 rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+        <label className="flex cursor-pointer items-center gap-2 rounded-md border border-concreto-escuro px-3 py-2 text-sm text-grafite hover:border-grafite-300">
           <input
             checked={baixoEstoque}
-            className="h-4 w-4"
+            className="h-4 w-4 accent-ferrugem"
             type="checkbox"
             onChange={(event) => {
               setPagina(1);
@@ -165,44 +163,37 @@ export function EstoquePage() {
         </label>
       </div>
 
-      <div className="overflow-x-auto rounded-md border border-zinc-200 bg-white">
-        <table className="min-w-full divide-y divide-zinc-200">
-          <thead className="bg-zinc-50">
+      <div className="painel overflow-x-auto">
+        <table className="tabela">
+          <thead>
             <tr>
-              {[
-                'Código',
-                'Descrição',
-                'Marca',
-                'Categoria',
-                'Saldo atual',
-                'Estoque mínimo',
-                'Unidade',
-                'Status',
-                'Ações',
-              ].map((coluna) => (
+              {['Código', 'Item', 'Categoria', 'Saldo', 'Mínimo', 'Ações'].map((coluna) => (
                 <th
                   key={coluna}
-                  className={[
-                    'px-4 py-3 text-xs font-semibold uppercase text-zinc-500',
-                    coluna === 'Ações' ? 'text-center' : 'text-left',
-                  ].join(' ')}
+                  className={
+                    coluna === 'Ações'
+                      ? 'text-center'
+                      : colunasNumericas.includes(coluna)
+                        ? 'numero'
+                        : undefined
+                  }
                 >
                   {coluna}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-200">
+          <tbody>
             {isLoading && (
               <tr>
-                <td className="px-4 py-6 text-sm text-zinc-500" colSpan={9}>
+                <td className="py-8 text-grafite-500" colSpan={6}>
                   Carregando itens...
                 </td>
               </tr>
             )}
             {!isLoading && data?.dados.length === 0 && (
               <tr>
-                <td className="px-4 py-6 text-sm text-zinc-500" colSpan={9}>
+                <td className="py-8 text-grafite-500" colSpan={6}>
                   Nenhum item de estoque encontrado.
                 </td>
               </tr>
@@ -210,27 +201,47 @@ export function EstoquePage() {
             {data?.dados.map((item) => {
               const baixo = item.saldo_atual <= item.estoque_minimo;
               return (
-                <tr key={item.id} className={baixo ? 'bg-amber-50' : undefined}>
-                  <td className="px-4 py-3 text-sm text-zinc-600">{item.codigo ?? '-'}</td>
-                  <td className="px-4 py-3 text-sm font-medium text-zinc-900">{item.descricao}</td>
-                  <td className="px-4 py-3 text-sm text-zinc-600">{item.marca ?? '-'}</td>
-                  <td className="px-4 py-3 text-sm text-zinc-600">
-                    {item.categoria.toUpperCase()}
+                <tr key={item.id} className={baixo ? 'linha-baixo-estoque' : undefined}>
+                  <td className="whitespace-nowrap tabular-nums text-grafite-500">
+                    {item.codigo ?? '-'}
                   </td>
-                  <td className="px-4 py-3 text-sm font-medium text-zinc-900">
-                    {item.saldo_atual}
+                  <td className="min-w-48">
+                    <span
+                      className={[
+                        'block font-medium',
+                        item.ativo ? 'text-grafite' : 'text-grafite-300',
+                      ].join(' ')}
+                    >
+                      {item.descricao}
+                      {!item.ativo && (
+                        <span className="ml-2 rounded bg-concreto px-1.5 py-0.5 text-xs font-medium text-grafite-500">
+                          Inativo
+                        </span>
+                      )}
+                    </span>
+                    {item.marca && (
+                      <span className="block text-xs text-grafite-500">{item.marca}</span>
+                    )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-zinc-600">{item.estoque_minimo}</td>
-                  <td className="px-4 py-3 text-sm text-zinc-600">{item.unidade_medida}</td>
-                  <td className="px-4 py-3 text-sm text-zinc-600">
-                    {item.ativo ? 'Ativo' : 'Inativo'}
+                  <td className="whitespace-nowrap">{item.categoria.toUpperCase()}</td>
+                  <td
+                    className={[
+                      'numero whitespace-nowrap font-semibold',
+                      baixo ? 'text-ferrugem' : 'text-grafite',
+                    ].join(' ')}
+                  >
+                    {item.saldo_atual}{' '}
+                    <span className="text-xs font-normal text-grafite-500">
+                      {item.unidade_medida}
+                    </span>
                   </td>
-                  <td className="px-4 py-3 align-middle text-sm">
-                    <div className="flex flex-nowrap items-center justify-center gap-2">
+                  <td className="numero">{item.estoque_minimo}</td>
+                  <td className="w-px align-middle">
+                    <div className="flex flex-nowrap items-center justify-center">
                       {podeCriarEditar && (
                         <button
                           aria-label="Editar item"
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-emerald-200 text-emerald-700 transition hover:bg-emerald-50"
+                          className="btn-icone"
                           onClick={() => abrir('item', item)}
                           title="Editar item"
                           type="button"
@@ -241,7 +252,7 @@ export function EstoquePage() {
                       {podeExcluir && (
                         <button
                           aria-label="Excluir item"
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-red-200 text-red-700 transition hover:bg-red-50"
+                          className="btn-icone-perigo"
                           onClick={() => excluir(item)}
                           title="Excluir item"
                           type="button"
@@ -252,7 +263,7 @@ export function EstoquePage() {
                       {podeRegistrarSaida && (
                         <button
                           aria-label="Registrar saída"
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-blue-200 text-blue-700 transition hover:bg-blue-50"
+                          className="btn-icone"
                           onClick={() => abrir('saida', item)}
                           title="Registrar saída"
                           type="button"
@@ -263,7 +274,7 @@ export function EstoquePage() {
                       {podeAjustar && (
                         <button
                           aria-label="Ajustar saldo"
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-violet-200 text-violet-700 transition hover:bg-violet-50"
+                          className="btn-icone"
                           onClick={() => abrir('ajuste', item)}
                           title="Ajustar saldo"
                           type="button"
@@ -273,7 +284,7 @@ export function EstoquePage() {
                       )}
                       <button
                         aria-label="Veículos compatíveis"
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-300 text-zinc-700 transition hover:bg-zinc-100"
+                        className="btn-icone"
                         onClick={() => abrir('veiculos', item)}
                         title="Veículos compatíveis"
                         type="button"
@@ -282,7 +293,7 @@ export function EstoquePage() {
                       </button>
                       <button
                         aria-label="Histórico de movimentações"
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-300 text-zinc-700 transition hover:bg-zinc-100"
+                        className="btn-icone"
                         onClick={() => abrir('historico', item)}
                         title="Histórico de movimentações"
                         type="button"
@@ -300,18 +311,18 @@ export function EstoquePage() {
 
       <div className="flex items-center justify-end gap-2">
         <button
-          className="rounded-md border border-zinc-300 px-3 py-2 text-sm disabled:opacity-50"
+          className="btn-secundario"
           disabled={pagina <= 1}
           onClick={() => setPagina((valor) => valor - 1)}
           type="button"
         >
           Anterior
         </button>
-        <span className="text-sm text-zinc-600">
+        <span className="text-sm tabular-nums text-grafite-500">
           Página {pagina} de {totalPaginas}
         </span>
         <button
-          className="rounded-md border border-zinc-300 px-3 py-2 text-sm disabled:opacity-50"
+          className="btn-secundario"
           disabled={pagina >= totalPaginas}
           onClick={() => setPagina((valor) => valor + 1)}
           type="button"

@@ -1,3 +1,126 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-concreto text-grafite antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-stretch: 87.5%;
+  }
+
+  :focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-grafite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Títulos */
+  .titulo-pagina {
+    @apply text-[1.75rem] font-bold leading-tight tracking-tight text-grafite;
+  }
+
+  .subtitulo-pagina {
+    @apply mt-1 text-sm text-grafite-500;
+  }
+
+  /* Superfícies */
+  .painel {
+    @apply rounded-md border border-concreto-escuro bg-white;
+  }
+
+  /* Botões */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primario {
+    @apply btn bg-ipe text-grafite hover:bg-ipe-escuro;
+  }
+
+  .btn-secundario {
+    @apply btn border border-concreto-escuro bg-white text-grafite hover:border-grafite-300;
+  }
+
+  .btn-icone {
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-md text-grafite-500 transition-colors hover:bg-concreto hover:text-grafite;
+  }
+
+  .btn-icone-perigo {
+    @apply btn-icone hover:bg-erro-claro hover:text-erro;
+  }
+
+  /* Campos */
+  .campo {
+    @apply w-full rounded-md border border-concreto-escuro bg-white px-3 py-2 text-sm text-grafite placeholder:text-grafite-300 transition-colors hover:border-grafite-300 focus:border-grafite focus:outline-none;
+  }
+
+  .rotulo {
+    @apply text-sm font-medium text-grafite;
+  }
+
+  .mensagem-erro {
+    @apply text-sm text-erro;
+  }
+
+  /* Tabelas */
+  .tabela {
+    @apply min-w-full text-sm;
+  }
+
+  .tabela thead {
+    @apply border-b border-concreto-escuro;
+  }
+
+  .tabela th {
+    @apply whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-grafite-500;
+  }
+
+  .tabela td {
+    @apply px-3 py-2.5 text-grafite-700;
+  }
+
+  .tabela .btn-icone,
+  .tabela .btn-icone-perigo {
+    @apply h-8 w-8;
+  }
+
+  .tabela tbody tr {
+    @apply border-b border-concreto last:border-b-0;
+  }
+
+  .tabela .numero {
+    @apply text-right tabular-nums;
+  }
+
+  .linha-baixo-estoque td:first-child {
+    box-shadow: inset 3px 0 0 theme('colors.ferrugem.DEFAULT');
+  }
+
+  /* Placa Mercosul */
+  .placa {
+    @apply inline-flex min-w-[5.75rem] flex-col overflow-hidden rounded-[3px] border border-grafite bg-white align-middle leading-none;
+  }
+
+  .placa-faixa {
+    @apply bg-mercosul py-[2px] text-center text-[7px] font-semibold tracking-[0.25em] text-white;
+  }
+
+  .placa-numero {
+    @apply px-2 py-[3px] text-center text-[13px] font-bold tracking-[0.12em] text-grafite tabular-nums;
+    font-stretch: 87.5%;
+  }
+}

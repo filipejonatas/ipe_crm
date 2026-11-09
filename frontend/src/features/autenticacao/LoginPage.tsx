@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { Icone } from '@/components/Icone';
 import { autenticacaoService } from '@/services/autenticacao.service';
 import { useAutenticacaoStore } from '@/store/autenticacao.store';
 
@@ -47,37 +48,35 @@ export function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-100 px-4 py-10">
-      <section className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-8 shadow-sm">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-concreto px-4 py-10">
+      <section className="painel w-full max-w-sm border-t-4 border-t-ipe p-8">
         <div className="mb-8">
-          <p className="text-sm font-medium uppercase text-emerald-700">IPE CRM</p>
-          <h1 className="mt-2 text-2xl font-semibold text-zinc-950">Entrar</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-grafite">Ipê CRM</h1>
+          <p className="mt-2 text-sm text-grafite-500">Entre com seu email e senha da oficina.</p>
         </div>
 
         <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate>
           <div>
-            <label className="text-sm font-medium text-zinc-800" htmlFor="email">
+            <label className="rotulo" htmlFor="email">
               Email
             </label>
             <input
-              className="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-zinc-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+              className="campo mt-2 py-2.5 text-base"
               id="email"
               type="email"
               autoComplete="email"
               {...register('email')}
             />
-            {errors.email ? (
-              <p className="mt-2 text-sm text-red-700">{errors.email.message}</p>
-            ) : null}
+            {errors.email ? <p className="mensagem-erro mt-2">{errors.email.message}</p> : null}
           </div>
 
           <div>
-            <label className="text-sm font-medium text-zinc-800" htmlFor="senha">
+            <label className="rotulo" htmlFor="senha">
               Senha
             </label>
             <div className="relative mt-2">
               <input
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 pr-11 text-zinc-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                className="campo py-2.5 pr-11 text-base"
                 id="senha"
                 type={mostrarSenha ? 'text' : 'password'}
                 autoComplete="current-password"
@@ -85,55 +84,29 @@ export function LoginPage() {
               />
               <button
                 aria-label={mostrarSenha ? 'Ocultar' : 'Mostrar'}
-                className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-zinc-500 transition hover:text-zinc-800"
+                className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-grafite-500 transition-colors hover:text-grafite"
                 title={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
                 type="button"
                 onClick={() => setMostrarSenha((valor) => !valor)}
               >
                 {mostrarSenha ? (
-                  <svg
-                    aria-hidden="true"
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M10.7 5.1A10.8 10.8 0 0 1 12 5c5 0 8.5 4.1 9.7 5.8a2 2 0 0 1 0 2.4 17.8 17.8 0 0 1-3 3.4" />
-                    <path d="M14.1 14.1a3 3 0 0 1-4.2-4.2" />
-                    <path d="M3 3l18 18" />
-                    <path d="M6.5 6.5a17.2 17.2 0 0 0-4.2 4.3 2 2 0 0 0 0 2.4C3.5 14.9 7 19 12 19a9.6 9.6 0 0 0 3.5-.7" />
-                  </svg>
+                  <Icone className="h-5 w-5" nome="ocultar" />
                 ) : (
-                  <svg
-                    aria-hidden="true"
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M2.3 10.8a2 2 0 0 0 0 2.4C3.5 14.9 7 19 12 19s8.5-4.1 9.7-5.8a2 2 0 0 0 0-2.4C20.5 9.1 17 5 12 5s-8.5 4.1-9.7 5.8Z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
+                  <Icone className="h-5 w-5" nome="mostrar" />
                 )}
               </button>
             </div>
-            {errors.senha ? (
-              <p className="mt-2 text-sm text-red-700">{errors.senha.message}</p>
-            ) : null}
+            {errors.senha ? <p className="mensagem-erro mt-2">{errors.senha.message}</p> : null}
           </div>
 
           {erro ? (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">{erro}</p>
+            <p className="rounded-md bg-erro-claro px-3 py-2 text-sm text-erro" role="alert">
+              {erro}
+            </p>
           ) : null}
 
           <button
-            className="w-full rounded-md bg-emerald-700 px-4 py-2.5 font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
+            className="btn-primario w-full py-2.5 text-base"
             type="submit"
             disabled={isSubmitting}
           >

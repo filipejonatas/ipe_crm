@@ -2,11 +2,13 @@ import type { Perfil } from '@ipe_crm/shared';
 import { PERFIS } from '@ipe_crm/shared';
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Icone, type NomeIcone } from '@/components/Icone';
 import { useAutenticacaoStore } from '@/store/autenticacao.store';
 
 interface MenuItem {
   nome: string;
   caminho: string;
+  icone: NomeIcone;
   perfis: Perfil[];
 }
 
@@ -14,31 +16,37 @@ const menus: MenuItem[] = [
   {
     nome: 'Trocas de óleo',
     caminho: '/trocas-oleo',
+    icone: 'oleo',
     perfis: [PERFIS.ADMIN, PERFIS.OFICINA],
   },
   {
     nome: 'Filtros/Veículos',
     caminho: '/compatibilidade',
+    icone: 'compatibilidade',
     perfis: [PERFIS.ADMIN, PERFIS.OFICINA],
   },
   {
     nome: 'Estoque',
     caminho: '/estoque',
+    icone: 'estoque',
     perfis: [PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS, PERFIS.GERENTE],
   },
   {
     nome: 'Fornecedores',
     caminho: '/fornecedores',
+    icone: 'fornecedor',
     perfis: [PERFIS.ADMIN, PERFIS.COMPRAS, PERFIS.ADMINISTRATIVO, PERFIS.GERENTE],
   },
   {
     nome: 'Veículos',
     caminho: '/veiculos',
+    icone: 'veiculo',
     perfis: [PERFIS.ADMIN, PERFIS.OFICINA, PERFIS.COMPRAS, PERFIS.GERENTE],
   },
   {
     nome: 'Manutenções',
     caminho: '/manutencoes',
+    icone: 'manutencao',
     perfis: [PERFIS.ADMIN, PERFIS.OFICINA],
   },
 ];
@@ -66,11 +74,11 @@ export function Layout() {
   const recuoConteudo = menuExpandido ? 'md:pl-64' : 'md:pl-20';
 
   return (
-    <div className="min-h-screen bg-zinc-100 text-zinc-950">
+    <div className="min-h-screen bg-concreto text-grafite">
       {menuAberto ? (
         <button
           aria-label="Fechar menu"
-          className="fixed inset-0 z-30 bg-zinc-950/30 md:hidden"
+          className="fixed inset-0 z-30 bg-grafite/40 md:hidden"
           type="button"
           onClick={fecharMenuMobile}
         />
@@ -78,8 +86,8 @@ export function Layout() {
 
       <aside
         className={[
-          'fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col border-r border-zinc-200 bg-white p-4 transition-all duration-200 md:translate-x-0',
-          menuAberto ? 'translate-x-0 shadow-xl' : '',
+          'fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col bg-grafite p-4 text-concreto transition-all duration-200 md:translate-x-0',
+          menuAberto ? 'translate-x-0' : '',
           larguraDesktop,
           menuExpandido ? 'md:p-4' : 'md:p-3',
         ].join(' ')}
@@ -92,56 +100,30 @@ export function Layout() {
         >
           <button
             aria-label={menuExpandido ? 'Recolher menu lateral' : 'Expandir menu lateral'}
-            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-700 transition hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-200 md:flex"
+            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-md text-grafite-300 transition-colors hover:bg-grafite-700 hover:text-white focus-visible:outline-ipe md:flex"
             title={menuExpandido ? 'Recolher menu' : 'Expandir menu'}
             type="button"
             onClick={() => setMenuExpandido((valor) => !valor)}
           >
-            <svg
-              aria-hidden="true"
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path d="M4 6h16" />
-              <path d="M4 12h16" />
-              <path d="M4 18h16" />
-            </svg>
+            <Icone className="h-5 w-5" nome={menuExpandido ? 'recolherMenu' : 'expandirMenu'} />
           </button>
           <button
             aria-label="Fechar menu"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-zinc-300 text-zinc-700 transition hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-200 md:hidden"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-grafite-300 transition-colors hover:bg-grafite-700 hover:text-white focus-visible:outline-ipe md:hidden"
             type="button"
             onClick={fecharMenuMobile}
           >
-            <svg
-              aria-hidden="true"
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path d="M4 6h16" />
-              <path d="M4 12h16" />
-              <path d="M4 18h16" />
-            </svg>
+            <Icone className="h-5 w-5" nome="fechar" />
           </button>
           <NavLink
             className={[
-              'truncate text-xl font-semibold text-emerald-800',
+              'truncate text-xl font-bold tracking-tight text-white [font-stretch:87.5%]',
               menuExpandido ? '' : 'md:hidden',
             ].join(' ')}
             to="/"
             onClick={fecharMenuMobile}
           >
-            IPE CRM
+            Ipê CRM
           </NavLink>
         </div>
 
@@ -151,11 +133,11 @@ export function Layout() {
               aria-label={menu.nome}
               className={({ isActive }) =>
                 [
-                  'flex min-h-10 items-center rounded-md text-sm font-medium transition',
+                  'flex min-h-10 items-center gap-3 rounded-md text-sm font-medium transition-colors focus-visible:outline-ipe',
                   menuExpandido ? 'px-3 py-2' : 'justify-center px-0 py-2',
                   isActive
-                    ? 'bg-emerald-50 text-emerald-800'
-                    : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950',
+                    ? 'bg-grafite-700 text-white shadow-[inset_3px_0_0_theme(colors.ipe.DEFAULT)]'
+                    : 'text-grafite-300 hover:bg-grafite-700/60 hover:text-white',
                 ].join(' ')
               }
               key={menu.caminho}
@@ -163,85 +145,59 @@ export function Layout() {
               to={menu.caminho}
               onClick={fecharMenuMobile}
             >
+              <Icone className="h-5 w-5 shrink-0" nome={menu.icone} />
               <span className={menuExpandido ? 'truncate' : 'truncate md:hidden'}>{menu.nome}</span>
-              {!menuExpandido ? (
-                <span className="hidden md:inline">{menu.nome.charAt(0)}</span>
-              ) : null}
             </NavLink>
           ))}
         </nav>
 
-        <div className="border-t border-zinc-200 pt-4">
+        <div className="border-t border-grafite-700 pt-4">
           <div className={menuExpandido ? '' : 'md:hidden'}>
-            <p className="truncate text-sm font-medium text-zinc-950">{usuario?.nome}</p>
-            <p className="truncate text-xs text-zinc-500">{usuario?.perfil}</p>
+            <p className="truncate text-sm font-medium text-white">{usuario?.nome}</p>
+            <p className="truncate text-xs capitalize text-grafite-300">
+              {usuario?.perfil?.toLowerCase()}
+            </p>
           </div>
           <button
             aria-label="Sair"
             className={[
-              'mt-4 flex h-10 w-full items-center justify-center rounded-md border border-zinc-300 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-200',
+              'mt-4 flex h-10 w-full items-center justify-center rounded-md border border-grafite-500 text-sm font-medium text-grafite-300 transition-colors hover:border-grafite-300 hover:text-white focus-visible:outline-ipe',
               menuExpandido ? 'px-3' : 'px-0',
             ].join(' ')}
             title="Sair"
             type="button"
             onClick={sair}
           >
-            {menuExpandido ? (
-              'Sair'
-            ) : (
-              <svg
-                aria-hidden="true"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <path d="M16 17l5-5-5-5" />
-                <path d="M21 12H9" />
-              </svg>
-            )}
+            {menuExpandido ? 'Sair' : <Icone className="h-5 w-5" nome="sair" />}
           </button>
         </div>
       </aside>
 
       <div className={['transition-all duration-200', recuoConteudo].join(' ')}>
-        <header className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 md:hidden">
+        <header className="flex items-center justify-between bg-grafite px-4 py-3 text-concreto md:hidden">
           <div className="flex items-center gap-3">
             <button
               aria-label="Abrir menu"
-              className="flex h-9 w-9 items-center justify-center rounded-md border border-zinc-300 text-zinc-700 transition hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+              className="flex h-9 w-9 items-center justify-center rounded-md text-grafite-300 transition-colors hover:bg-grafite-700 hover:text-white focus-visible:outline-ipe"
               type="button"
               onClick={() => setMenuAberto(true)}
             >
-              <svg
-                aria-hidden="true"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M4 6h16" />
-                <path d="M4 12h16" />
-                <path d="M4 18h16" />
-              </svg>
+              <Icone className="h-5 w-5" nome="menu" />
             </button>
-            <NavLink className="font-semibold text-emerald-800" to="/">
-              IPE CRM
+            <NavLink className="font-bold tracking-tight text-white [font-stretch:87.5%]" to="/">
+              Ipê CRM
             </NavLink>
           </div>
-          <button className="text-sm font-medium text-zinc-700" type="button" onClick={sair}>
+          <button
+            className="text-sm font-medium text-grafite-300 hover:text-white"
+            type="button"
+            onClick={sair}
+          >
             Sair
           </button>
         </header>
 
-        <main className="px-4 py-6 sm:px-6 lg:px-8">
+        <main className="px-4 py-8 sm:px-6 lg:px-10">
           <Outlet />
         </main>
       </div>
